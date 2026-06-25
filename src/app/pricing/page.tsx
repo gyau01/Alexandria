@@ -23,10 +23,17 @@ export default async function Pricing() {
             interval: 'month',
             popular: false
         },
+				{
+						id:'basic+',
+						name:'Basic+',
+						amount: 299,//2.99 in cents
+						interval:'month',
+						popular:true
+				},
         {
             id: 'pro',
             name: 'Pro',
-            amount: 499, // $4.99 in cents
+            amount: 350, // $3.49 in cents
             interval: 'month',
             popular: true
         }
@@ -57,7 +64,8 @@ export default async function Pricing() {
     const sortedPlans = [
         plans.find((p: any) => (p.amount || 0) === 0) || defaultPlans[0],
         plans.find((p: any) => (p.amount || 0) === 199) || defaultPlans[1],
-        plans.find((p: any) => (p.amount || 0) === 499) || defaultPlans[2]
+				plans.find((p: any) => (p.amount || 0) === 299) || defaultPlans[2],
+        plans.find((p: any) => (p.amount || 0) === 349) || defaultPlans[3]
     ].filter(Boolean);
     
     return (
