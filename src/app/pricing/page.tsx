@@ -23,13 +23,23 @@ export default async function Pricing() {
             interval: 'month',
             popular: false
         },
-		{
-			id:'basic+',
-			name:'Basic+',
-			amount: 299,//2.99 in cents
-			interval:'month',
-			popular:true
-		},
+
+				{
+					id:'basic+',
+					name:'Basic+',
+					amount: 299,//2.99 in cents
+					interval:'month',
+					popular:true
+				},
+=======
+				{
+						id:'basicPlus',
+						name:'Basic Plus',
+						amount: 299,//2.99 in cents
+						interval:'month',
+						popular:true
+				},
+
         {
             id: 'pro',
             name: 'Pro',
@@ -40,6 +50,7 @@ export default async function Pricing() {
     ];
 
     // Try to get plans from API, otherwise use default plans
+		/*
     let plans;
     try {
         const { data: apiPlans } = await supabase.functions.invoke('supabase-functions-get-plans');
@@ -59,7 +70,8 @@ export default async function Pricing() {
             return aPrice - bPrice;
         });
     }
-
+		*/
+		let plans = defaultPlans;
     // Ensure we have exactly 3 plans in the correct order
     const sortedPlans = [
         plans.find((p: any) => (p.amount || 0) === 0) || defaultPlans[0],
@@ -82,7 +94,7 @@ export default async function Pricing() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                     {sortedPlans.map((item: any) => (
                         <PricingCard key={item.id} item={item} user={user} />
                     ))}
