@@ -42,6 +42,16 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
     return `${msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${time}`;
   };
 
+  const pairKey = (a: string, b: string) => [a, b].sort().join("|");
+
+  const resolveMatchIds = (match: { id: string; allMatchIds?: string[] }) => {
+    if (match.allMatchIds?.length) return match.allMatchIds;
+    const hit = matches.find(
+      (m) => m.allMatchIds?.includes(match.id) || m.id === match.id
+    );
+    return hit?.allMatchIds?.length ? hit.allMatchIds : [match.id];
+  };
+
   useEffect(() => {
     loadMatches();
   }, [userId]);
@@ -54,16 +64,13 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
 
   useEffect(() => {
     if (selectedMatch) {
-      const ids: string[] =
-        selectedMatch.allMatchIds?.length > 0
-          ? selectedMatch.allMatchIds
-          : [selectedMatch.id];
+      const ids = resolveMatchIds(selectedMatch);
       loadMessages(ids);
       markMessagesAsRead(ids);
       const cleanup = subscribeToMessages(ids);
       return cleanup;
     }
-  }, [selectedMatch]);
+  }, [selectedMatch, matches]);
 
   useEffect(() => {
     if (shouldScrollRef.current) {
@@ -71,8 +78,6 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
       shouldScrollRef.current = false;
     }
   }, [messages]);
-
-  const pairKey = (a: string, b: string) => [a, b].sort().join("|");
 
   const loadMatches = async () => {
     const supabase = createClient();
@@ -279,27 +284,27 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-  const items = e.clipboardData.items;
+    const items = Array.from(e.clipboardData.items);
 
-  for (const item of items) {
-    if (item.type.startsWith("image/")) {
-      const file = item.getAsFile();
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
 
-      if (file) {
-        setSelectedImage(file);
+        if (file) {
+          setSelectedImage(file);
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result as string);
-        };
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+          };
 
-        reader.readAsDataURL(file);
+          reader.readAsDataURL(file);
+        }
+
+        break;
       }
-
-      break;
     }
-  }
-};
+  };
 
   const clearImage = () => {
     setSelectedImage(null);
@@ -349,7 +354,7 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
     }
 
     const messageData = {
-      match_id: selectedMatch.id,
+      match_id: resolveMatchIds(selectedMatch)[0],
       sender_id: userId,
       content: newMessage.trim(),
       image_url: imageUrl
@@ -384,11 +389,7 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
       });
 
       setTimeout(() => {
-        const ids =
-          selectedMatch.allMatchIds?.length > 0
-            ? selectedMatch.allMatchIds
-            : [selectedMatch.id];
-        loadMessages(ids);
+        loadMessages(resolveMatchIds(selectedMatch));
       }, 500);
     }
     setUploading(false);

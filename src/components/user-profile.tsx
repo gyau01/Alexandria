@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
-import { UserCircle } from 'lucide-react'
+import { UserCircle, User } from 'lucide-react'
 import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
@@ -67,6 +67,11 @@ export default function UserProfile() {
                         <p className="text-sm font-medium">{userName || "User"}</p>
                     </div>
                 </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push("/dashboard?tab=profile")}>
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={async () => {
                     const supabase = createClient()

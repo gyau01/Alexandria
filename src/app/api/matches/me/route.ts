@@ -29,10 +29,12 @@ export async function GET() {
   const admin = createSupabaseAdmin(supabaseUrl, serviceKey);
   const uid = user.id;
 
+  const pairKey = (a: string, b: string) => [a, b].sort().join("|");
+
   const { data: matchesRes, error: matchesError } = await admin
     .from("matches")
     .select("*")
-    .eq("user1_id", uid)
+    .or(`user1_id.eq.${uid},user2_id.eq.${uid}`)
     .order("compatibility_score", { ascending: false });
 
   if (matchesError) {
@@ -43,9 +45,30 @@ export async function GET() {
     );
   }
 
+  const rows = matchesRes || [];
+  const byPair = new Map<string, typeof rows>();
+  for (const row of rows) {
+    if (!row.user1_id || !row.user2_id) continue;
+    const key = pairKey(row.user1_id, row.user2_id);
+    const list = byPair.get(key) ?? [];
+    list.push(row);
+    byPair.set(key, list);
+  }
+
+  const mergedMatches = Array.from(byPair.values()).map((group) => {
+    const canonical = group.find((g) => g.user1_id === uid) ?? group[0];
+    const restIds = group.filter((g) => g.id !== canonical.id).map((g) => g.id);
+    return { ...canonical, allMatchIds: [canonical.id, ...restIds] };
+  });
+
+  mergedMatches.sort(
+    (a, b) => (b.compatibility_score ?? 0) - (a.compatibility_score ?? 0)
+  );
+
   const matchDetails = await Promise.all(
-    (matchesRes || []).map(async (match) => {
-      const otherId = match.user2_id;
+    mergedMatches.map(async (match) => {
+      const otherId =
+        match.user1_id === uid ? match.user2_id : match.user1_id;
       const [otherUserRes, profileRes, classesRes] = await Promise.all([
         admin.from("users").select("full_name, email").eq("user_id", otherId).single(),
         admin
