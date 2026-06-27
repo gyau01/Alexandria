@@ -77,7 +77,19 @@ export default function PricingCard({ item, user }: {
                     'Study group creation'
                 ]
             };
-        } else if (price === 4.99 || price === 499 || name.includes('pro') || name.includes('premium')) {
+
+        } else if (price === 2.99 || price === 299 || name.includes('basic plus') || name.includes('basic plus')) {
+						return {
+							badge:'BASICPLUS',
+							badgeColor:'bg-blue-500/30 text-blue-200 border-blue-400/50',
+							title:'Basic Plus',
+							description: 'Basic plus a little extra something',
+							features: [
+								'All of the basic features',
+								'Another feature you get to choose'
+							]
+						};
+				} else if (price === 3.49 || price === 349 || name.includes('pro') || name.includes('premium')) {
             // Pro plan ($4.99)
             return {
                 badge: 'PRO',
