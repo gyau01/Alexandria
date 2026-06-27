@@ -2,6 +2,7 @@
 
 import { encodedRedirect } from "@/utils/utils";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "../../supabase/server";
 
 export const signUpAction = async (formData: FormData) => {
@@ -18,10 +19,16 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
+  const origin =
+    (await headers()).get("origin") ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "http://localhost:3000";
+
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: `${origin}/auth/callback`,
       data: {
         full_name: fullName,
         name: fullName,
@@ -38,6 +45,38 @@ export const signUpAction = async (formData: FormData) => {
     "success",
     "/sign-up",
     "Thanks for signing up! Please check your email for a verification link.",
+  );
+};
+
+export const resendConfirmationAction = async (formData: FormData) => {
+  const email = formData.get("email")?.toString();
+  const supabase = await createClient();
+
+  if (!email) {
+    return encodedRedirect("error", "/sign-up", "Email is required");
+  }
+
+  const origin =
+    (await headers()).get("origin") ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "http://localhost:3000";
+
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/sign-up", error.message);
+  }
+
+  return encodedRedirect(
+    "success",
+    "/sign-up",
+    "Confirmation email resent. Please check your inbox (and spam folder).",
   );
 };
 

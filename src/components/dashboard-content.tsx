@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, MessageCircle, UserCircle, BarChart3 } from "lucide-react";
+import { Users, MessageCircle, BarChart3, MessageSquare } from "lucide-react";
 import MatchesView from "./matches-view";
 import ChatView from "./chat-view";
 import ProfileView from "./profile-view";
 import PollsView from "./polls-view";
+import CommunityBoard from "./community-board";
 
 interface DashboardContentProps {
   userId: string;
@@ -46,9 +47,9 @@ export default function DashboardContent({ userId }: DashboardContentProps) {
             <BarChart3 className="h-4 w-4" />
             Polls
           </TabsTrigger>
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <UserCircle className="h-4 w-4" />
-            Profile
+          <TabsTrigger value="board" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Board
           </TabsTrigger>
         </TabsList>
 
@@ -62,6 +63,10 @@ export default function DashboardContent({ userId }: DashboardContentProps) {
 
         <TabsContent value="polls">
           <PollsView userId={userId} />
+        </TabsContent>
+
+        <TabsContent value="board">
+          <CommunityBoard userId={userId} />
         </TabsContent>
 
         <TabsContent value="profile">
