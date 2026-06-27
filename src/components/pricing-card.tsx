@@ -5,10 +5,7 @@ import { Button } from "./ui/button";
 import { Check, ArrowRight } from "lucide-react";
 import { supabase } from "../../supabase/supabase";
 
-export default function PricingCard({ item, user }: {
-    item: any,
-    user: User | null
-}) {
+export default function PricingCard({ item, user }: { item: any, user: User | null }) {
     // Handle checkout process
     const handleCheckout = async (priceId: string) => {
         if (!user) {
@@ -63,7 +60,8 @@ export default function PricingCard({ item, user }: {
                     'Messaging with matches'
                 ]
             };
-        } else if (price === 1.99 || price === 199 || name.includes('basic')) {
+        }
+				else if (price === 1.99 || price === 199 || name.includes('basic')) {
             // Basic plan ($1.99)
             return {
                 badge: 'BASIC',
@@ -77,8 +75,8 @@ export default function PricingCard({ item, user }: {
                     'Study group creation'
                 ]
             };
-
-        } else if (price === 2.99 || price === 299 || name.includes('basic plus') || name.includes('basic plus')) {
+        } 
+				else if (price === 2.99 || price === 299 || name.includes('basic plus') || name.includes('basic+')) {
 						return {
 							badge:'BASICPLUS',
 							badgeColor:'bg-blue-500/30 text-blue-200 border-blue-400/50',
@@ -89,7 +87,8 @@ export default function PricingCard({ item, user }: {
 								'Another feature you get to choose'
 							]
 						};
-				} else if (price === 3.49 || price === 349 || name.includes('pro') || name.includes('premium')) {
+				} 
+				else if (price === 3.49 || price === 349 || name.includes('pro') || name.includes('premium')) {
             // Pro plan ($4.99)
             return {
                 badge: 'PRO',
@@ -104,7 +103,8 @@ export default function PricingCard({ item, user }: {
                     'Study session scheduling'
                 ]
             };
-        } else {
+        }
+				else {
             return {
                 badge: item.name?.toUpperCase() || 'PLAN',
                 badgeColor: 'bg-blue-600/20 text-blue-300 border-blue-400/30',

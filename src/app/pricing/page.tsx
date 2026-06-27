@@ -31,21 +31,12 @@ export default async function Pricing() {
 					interval:'month',
 					popular:true
 				},
-=======
-				{
-						id:'basicPlus',
-						name:'Basic Plus',
-						amount: 299,//2.99 in cents
-						interval:'month',
-						popular:true
-				},
-
         {
             id: 'pro',
             name: 'Pro',
             amount: 349, // $3.49 in cents
             interval: 'month',
-            popular: true
+            popular: false
         }
     ];
 
