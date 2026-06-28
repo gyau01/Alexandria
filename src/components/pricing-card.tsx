@@ -54,7 +54,6 @@ export default function PricingCard({ item, user }: { item: any, user: User | nu
                 title: 'Free',
                 description: 'Perfect for exploring what Cramlyg can do',
                 features: [
-                    'Unlimited study matching',
                     'Basic study preferences',
                     'Find study partners',
                     'Messaging with matches'
@@ -70,9 +69,11 @@ export default function PricingCard({ item, user }: { item: any, user: User | nu
                 description: 'Great for regular students',
                 features: [
                     'All free features',
-                    'Priority matching',
-                    'Advanced study preferences',
-                    'Study group creation'
+                    'Choose two paid features',
+                    'unlimited chats',
+                    'unlimited matching',
+										'10 total matches',
+										'unlimited discussion board posts'
                 ]
             };
         } 
@@ -80,11 +81,11 @@ export default function PricingCard({ item, user }: { item: any, user: User | nu
 						return {
 							badge:'BASICPLUS',
 							badgeColor:'bg-blue-500/30 text-blue-200 border-blue-400/50',
-							title:'Basic Plus',
+							title:'Basic +',
 							description: 'Basic plus a little extra something',
 							features: [
-								'All of the basic features',
-								'Another feature you get to choose'
+								'Don\'t feel like choosing?',
+								'Add another feature for just a dollar'
 							]
 						};
 				} 
@@ -96,11 +97,9 @@ export default function PricingCard({ item, user }: { item: any, user: User | nu
                 title: 'Pro',
                 description: 'Advanced features for power users',
                 features: [
-                    'All basic features',
-                    'Unlimited priority matching',
-                    'Advanced study analytics',
-                    'Priority support',
-                    'Study session scheduling'
+                    'Can\'t choose?',
+										'Get all of the features',
+										'with a slight discount'
                 ]
             };
         }
@@ -193,7 +192,7 @@ export default function PricingCard({ item, user }: { item: any, user: User | nu
                             : 'bg-blue-500 hover:bg-blue-400 text-white shadow-lg hover:shadow-xl'
                     }`}
                 >
-                    {isFree ? 'Get Started Free' : `Start ${planDetails.title} Trial`}
+                    {isFree ? 'Get Started Free' : `Choose your plan.`}
                     {!isFree && <ArrowRight className="ml-2 h-5 w-5" />}
                 </Button>
             </div>

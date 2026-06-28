@@ -41,7 +41,7 @@ export default async function Pricing() {
     ];
 
     // Try to get plans from API, otherwise use default plans
-		/*
+		
     let plans;
     try {
         const { data: apiPlans } = await supabase.functions.invoke('supabase-functions-get-plans');
@@ -61,8 +61,8 @@ export default async function Pricing() {
             return aPrice - bPrice;
         });
     }
-		*/
-		let plans = defaultPlans;
+		
+		//let plans = defaultPlans;
     // Ensure we have exactly 3 plans in the correct order
     const sortedPlans = [
         plans.find((p: any) => (p.amount || 0) === 0) || defaultPlans[0],
