@@ -18,18 +18,30 @@ serve(async (req) => {
   }
 
   try {
-    const { price_id, user_id, return_url } = await req.json();
+    const { plan_key, user_id, return_url } = await req.json();
     
-    if (!price_id || !user_id || !return_url) {
+    if (!plan_key || !user_id || !return_url) {
       throw new Error('Missing required parameters');
     }
+
+		const products = await stripe.products.search({query: `metadata['plan_key']:'${plan_key}'`, expand: ['data.default_price'],});
+		if ( products.data.length === 0 ) {
+				throw new Error ( 'no product found for plan_key: ${plan_key}');
+		}
+
+		const product = products.data[0];
+		const price = product.default_price as Stripe.Price;
+
+		if ( !price ) {
+				throw new Error('product doesn\'t have a default price');
+		}
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          price: price_id,
+          price: price.id,
           quantity: 1,
         },
       ],
