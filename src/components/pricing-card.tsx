@@ -181,8 +181,9 @@ export default function PricingCard({ item, user }: { item: any, user: User | nu
                 <Button
                     onClick={async () => {
                         if (!isFree) {
-                            await handleCheckout(item.id);
-                        } else {
+                            window.location.href = user ? "/pricing/build" : "/sign-up"; ;
+                        }
+												else {
                             window.location.href = user ? "/dashboard" : "/sign-up";
                         }
                     }}
