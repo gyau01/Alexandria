@@ -19,12 +19,21 @@ serve(async (req) => {
 
   try {
     const { plan_key, user_id, return_url } = await req.json();
+		plan_key = String(plan_key);
     
     if (!plan_key || !user_id || !return_url) {
       throw new Error('Missing required parameters');
     }
 
-		const products = await stripe.products.search({query: `metadata['plan_key']:'${plan_key}'`, expand: ['data.default_price'],});
+		const products = await stripe.products.search({
+			query: `metadata['plan_key']:'${plan_key}'`,
+			expand: ['data.default_price'],
+		});
+
+		console.log('products found:', JSON.stringify(products.data));
+		console.log('plan_key searched:', plan_key);
+
+
 		if ( products.data.length === 0 ) {
 				throw new Error ( 'no product found for plan_key: ${plan_key}');
 		}
