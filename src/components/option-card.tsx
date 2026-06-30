@@ -40,16 +40,19 @@ export default function OptionCard({
     }
     const planKey = [...selected].reduce((sum, id) => sum + id, 0);
     console.log("plan_key being sent:", planKey);
+		console.log("user.id: ",user.id);
+		console.log("return url: ", `${window.location.origin}/dashboard`);
     try {
       const { data, error } = await supabase.functions.invoke(
         "supabase-functions-create-checkout",
         {
-          body: {
+          body: JSON.stringify( {
             plan_key: planKey,
             user_id: user.id,
             return_url: `${window.location.origin}/dashboard`,
-          },
+          }),
           headers: {
+						"Content-Type":"application/json",
             "X-Customer-Email": user.email || "",
           },
         },
@@ -105,7 +108,10 @@ export default function OptionCard({
       <div className="text-center mt-12">
         <button
           disabled={!hasEnough}
-          onClick={handleCheckout}
+          onClick={() => {
+					console.log("yo he hit the buttton");
+					handleCheckout();
+					}}
           className={`px-12 py-4 rounded-xl font-bold text-lg transition-all ${
             hasEnough
               ? "bg-white text-blue-700 hover:bg-blue-50"
