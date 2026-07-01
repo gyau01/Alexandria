@@ -1,21 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import stripe from "https://esm.sh/stripe@13.6.0?target=deno";
+import Stripe from "https://esm.sh/stripe@13.6.0?target=deno";
 
 
-const stripe = new stripe(deno.env.get('stripe_secret_key') || '', {
-  apiversion: '2023-10-16',
-  httpclient: stripe.createfetchhttpclient(),
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+  apiVersion: '2023-10-16',
+  httpClient: Stripe.createFetchHttpClient(),
 });
 
-const corsheaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type, x-customer-email',
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-customer-email',
 }
-
 serve(async (req) => {
 
   if (req.method === 'OPTIONS') {
-    return new response(null, { headers: corsheaders });
+    return new Response(null, { headers: corsHeaders });
   }
 	console.log("yo man the checkout is running");
 
@@ -57,15 +56,15 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${return_url}?session_id={checkout_session_id}`,
+      success_url: `${return_url}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${return_url}?canceled=true`,
-      customer_email: req.headers.get('x-customer-email'),
+      customer_email: req.headers.get('X-Customer-Email'),
       metadata: {
         user_id,
       },
     });
 
-    return new response(
+    return new Response(
       json.stringify({ sessionid: session.id, url: session.url }),
       {
         status: 200,
@@ -74,11 +73,11 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('error creating checkout session:', error);
-    return new response(
+    return new Response(
       json.stringify({ error: error.message }),
       {
         status: 400,
-        headers: { ...corsheaders, 'content-type': 'application/json' },
+        headers: { ...corsheaders, 'Content-Type': 'application/json' },
       }
     );
   }
