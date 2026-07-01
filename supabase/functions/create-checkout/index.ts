@@ -1,84 +1,125 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@13.6.0?target=deno";
+"use client";
 
+import { useState } from "react";
+import { Check } from "lucide-react";
+import { supabase } from "../../supabase/supabase";
+import { User } from "@supabase/supabase-js";
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2023-10-16',
-  httpClient: Stripe.createFetchHttpClient(),
-});
+type Option = {
+  id: number;
+  name: string;
+  description: string;
+  amount: number;
+};
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-customer-email',
-}
-serve(async (req) => {
+const MIN = 2;
 
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-	console.log("yo man the checkout is running");
+export default function OptionCard({
+  user,
+  options,
+}: {
+  user: User | null;
+  options: Option[];
+}) {
+  const [selected, setSelected] = useState<Set<number>>(new Set());
 
-  try {
-    const { plan_key: rawplankey, user_id, return_url } = await req.json();
-		console.log("received body:", { rawplankey, user_id, return_url }); // add this
-		const plan_key = string(rawplankey);
-    console.log( "i am plan_key", plan_key ); 
-    if (!plan_key || !user_id || !return_url) {
-      throw new error('missing required parameters');
+  const toggle = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const hasEnough = selected.size >= MIN;
+
+  const handleCheckout = async () => {
+    if (!user) {
+      window.location.href = "/sign-in?redirect=pricing";
+      return;
     }
 
-		const products = await stripe.products.search({
-				query: `metadata['plan_key']:'${plan_key}'`,
-		});
-		if ( products.data.length === 0 ) {
-				throw new error ( `no product found for plan_key: ${plan_key}`);
-		}
+    // Bitmask sum: each option.id is a power of 2, so this sum is a
+    // unique key per combination of selected options.
+    const planKey = [...selected].reduce((sum, id) => sum + id, 0);
 
-		const product = products.data[0];
-		
-		const prices = await stripe.prices.list ({
-				product:product.id,
-				active: true,
-		});
-
-		if(prices.data.length === 0 ) {
-				throw new error (`no price found for product: ${product.id}`);
-		}
-
-		const price = prices.data[0];
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "supabase-functions-create-checkout",
         {
-          price: price.id,
-          quantity: 1,
+          body: {
+            plan_key: planKey,
+            user_id: user.id,
+            return_url: `${window.location.origin}/dashboard`,
+          },
+          headers: {
+            "X-Customer-Email": user.email || "",
+          },
         },
-      ],
-      mode: 'subscription',
-      success_url: `${return_url}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${return_url}?canceled=true`,
-      customer_email: req.headers.get('X-Customer-Email'),
-      metadata: {
-        user_id,
-      },
-    });
+      );
 
-    return new Response(
-      json.stringify({ sessionid: session.id, url: session.url }),
-      {
-        status: 200,
-        headers: { ...corsheaders, 'content-type': 'application/json' },
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
       }
-    );
-  } catch (error) {
-    console.error('error creating checkout session:', error);
-    return new Response(
-      json.stringify({ error: error.message }),
-      {
-        status: 400,
-        headers: { ...corsheaders, 'Content-Type': 'application/json' },
-      }
-    );
-  }
-});
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+    }
+  };
+
+  return (
+    <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        {options.map((option) => {
+          const isSelected = selected.has(option.id);
+          return (
+            <div
+              key={option.id}
+              onClick={() => toggle(option.id)}
+              className="relative rounded-2xl overflow-hidden cursor-pointer transition-all bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 border border-blue-600/50 shadow-xl"
+            >
+              <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]"></div>
+              <div className="relative p-8 text-white">
+                <div className="inline-flex items-center px-4 py-1.5 text-xs font-semibold rounded-full border bg-blue-600/20 text-blue-300 border-blue-400/30">
+                  FEATURE
+                </div>
+                <h3 className="text-2xl font-bold mb-3">{option.name}</h3>
+                <p className="text-blue-100 mb-6 text-lg">
+                  {option.description}
+                </p>
+                <div
+                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                    isSelected
+                      ? "bg-blue-400 border-blue-400"
+                      : "border-blue-500"
+                  }`}
+                >
+                  {isSelected && <Check className="w-4 h-4 text-white" />}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="text-center mt-12">
+        <button
+          disabled={!hasEnough}
+          onClick={handleCheckout}
+          className={`px-12 py-4 rounded-xl font-bold text-lg transition-all ${
+            hasEnough
+              ? "bg-white text-blue-700 hover:bg-blue-50"
+              : "bg-blue-800 text-blue-400 cursor-not-allowed"
+          }`}
+        >
+          {hasEnough
+            ? "Continue to checkout"
+            : `Select ${MIN - selected.size} more to continue`}
+        </button>
+      </div>
+    </div>
+  );
+}

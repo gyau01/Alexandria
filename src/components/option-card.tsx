@@ -38,21 +38,21 @@ export default function OptionCard({
       window.location.href = "/sign-in?redirect=pricing";
       return;
     }
+
+    // Bitmask sum: each option.id is a power of 2, so this sum is a
+    // unique key per combination of selected options.
     const planKey = [...selected].reduce((sum, id) => sum + id, 0);
-    console.log("plan_key being sent:", planKey);
-		console.log("user.id: ",user.id);
-		console.log("return url: ", `${window.location.origin}/dashboard`);
+
     try {
       const { data, error } = await supabase.functions.invoke(
         "supabase-functions-create-checkout",
         {
-          body: JSON.stringify( {
+          body: {
             plan_key: planKey,
             user_id: user.id,
             return_url: `${window.location.origin}/dashboard`,
-          }),
+          },
           headers: {
-						"Content-Type":"application/json",
             "X-Customer-Email": user.email || "",
           },
         },
@@ -108,10 +108,7 @@ export default function OptionCard({
       <div className="text-center mt-12">
         <button
           disabled={!hasEnough}
-          onClick={() => {
-					console.log("yo he hit the buttton");
-					handleCheckout();
-					}}
+          onClick={handleCheckout}
           className={`px-12 py-4 rounded-xl font-bold text-lg transition-all ${
             hasEnough
               ? "bg-white text-blue-700 hover:bg-blue-50"
