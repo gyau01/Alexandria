@@ -18,9 +18,7 @@ serve(async (req) => {
     }
 
     try {
-        const plans = await stripe.plans.list({
-            active: true,
-        });
+        const plans = await stripe.prices.list({ active: true });
 
         return new Response(
             JSON.stringify(plans.data),

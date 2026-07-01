@@ -5,10 +5,7 @@ import { Button } from "./ui/button";
 import { Check, ArrowRight } from "lucide-react";
 import { supabase } from "../../supabase/supabase";
 
-export default function PricingCard({ item, user }: {
-    item: any,
-    user: User | null
-}) {
+export default function PricingCard({ item, user }: { item: any, user: User | null }) {
     // Handle checkout process
     const handleCheckout = async (priceId: string) => {
         if (!user) {
@@ -57,13 +54,13 @@ export default function PricingCard({ item, user }: {
                 title: 'Free',
                 description: 'Perfect for exploring what Cramlyg can do',
                 features: [
-                    'Unlimited study matching',
                     'Basic study preferences',
                     'Find study partners',
                     'Messaging with matches'
                 ]
             };
-        } else if (price === 1.99 || price === 199 || name.includes('basic')) {
+        }
+				else if (price === 1.99 || price === 199 || name.includes('basic')) {
             // Basic plan ($1.99)
             return {
                 badge: 'BASIC',
@@ -72,12 +69,27 @@ export default function PricingCard({ item, user }: {
                 description: 'Great for regular students',
                 features: [
                     'All free features',
-                    'Priority matching',
-                    'Advanced study preferences',
-                    'Study group creation'
+                    'Choose two paid features',
+                    'unlimited chats',
+                    'unlimited matching',
+										'10 total matches',
+										'unlimited discussion board posts'
                 ]
             };
-        } else if (price === 4.99 || price === 499 || name.includes('pro') || name.includes('premium')) {
+        } 
+				else if (price === 2.99 || price === 299 || name.includes('basic plus') || name.includes('basic+')) {
+						return {
+							badge:'BASICPLUS',
+							badgeColor:'bg-blue-500/30 text-blue-200 border-blue-400/50',
+							title:'Basic +',
+							description: 'Basic plus a little extra something',
+							features: [
+								'Don\'t feel like choosing?',
+								'Add another feature for just a dollar'
+							]
+						};
+				} 
+				else if (price === 3.49 || price === 349 || name.includes('pro') || name.includes('premium')) {
             // Pro plan ($4.99)
             return {
                 badge: 'PRO',
@@ -85,14 +97,13 @@ export default function PricingCard({ item, user }: {
                 title: 'Pro',
                 description: 'Advanced features for power users',
                 features: [
-                    'All basic features',
-                    'Unlimited priority matching',
-                    'Advanced study analytics',
-                    'Priority support',
-                    'Study session scheduling'
+                    'Can\'t choose?',
+										'Get all of the features',
+										'with a slight discount'
                 ]
             };
-        } else {
+        }
+				else {
             return {
                 badge: item.name?.toUpperCase() || 'PLAN',
                 badgeColor: 'bg-blue-600/20 text-blue-300 border-blue-400/30',
@@ -170,8 +181,9 @@ export default function PricingCard({ item, user }: {
                 <Button
                     onClick={async () => {
                         if (!isFree) {
-                            await handleCheckout(item.id);
-                        } else {
+                            window.location.href = user ? "/pricing/build" : "/sign-up"; ;
+                        }
+												else {
                             window.location.href = user ? "/dashboard" : "/sign-up";
                         }
                     }}
@@ -181,7 +193,7 @@ export default function PricingCard({ item, user }: {
                             : 'bg-blue-500 hover:bg-blue-400 text-white shadow-lg hover:shadow-xl'
                     }`}
                 >
-                    {isFree ? 'Get Started Free' : `Start ${planDetails.title} Trial`}
+                    {isFree ? 'Get Started Free' : `Choose your plan.`}
                     {!isFree && <ArrowRight className="ml-2 h-5 w-5" />}
                 </Button>
             </div>
