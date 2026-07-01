@@ -2,6 +2,7 @@ import Hero from "@/components/hero";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import WaitlistSection from "@/components/waitlist-section";
+import FeedbackSection from "@/components/feedback-section";
 import { createClient } from "../../supabase/server";
 import { ArrowUpRight, Users, MessageSquare, Target, Shield } from 'lucide-react';
 
@@ -167,19 +168,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-            Ready to Find Your <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Study Buddy?</span>
-          </h2>
-          <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">Join thousands of students who are achieving better grades through collaborative learning</p>
-          <a href={user ? "/dashboard" : "/sign-up"} className="group relative inline-flex items-center px-10 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl hover:shadow-2xl">
-            {user ? "Go to Dashboard" : "Sign Up Now - It's Free"}
-            <ArrowUpRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-          </a>
-        </div>
-      </section>
+      {/* Feedback Section */}
+      <FeedbackSection />
 
       <Footer />
     </div>

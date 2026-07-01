@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, MessageCircle, BookOpen, GraduationCap } from "lucide-react";
+import { Users, MessageCircle, BookOpen, GraduationCap, X } from "lucide-react";
 import { createClient } from "../../supabase/client";
+import UserProfileDialog from "./user-profile-dialog";
 
 interface MatchesViewProps {
   userId: string;
@@ -19,6 +20,8 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
   const [rematching, setRematching] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [rematchError, setRematchError] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [viewProfileId, setViewProfileId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -62,6 +65,36 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
     }
   };
 
+  const handleRemove = async (match: any) => {
+    const name = match.otherUser?.full_name || "this study buddy";
+    if (
+      !window.confirm(
+        `Remove ${name} from your matches? This removes the match for both of you.`
+      )
+    ) {
+      return;
+    }
+    setRemovingId(match.id);
+    try {
+      const res = await fetch("/api/matches/remove", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otherUserId: match.otherId }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        alert(body.error || `Failed to remove match (${res.status})`);
+        return;
+      }
+      setMatches((prev) => prev.filter((m) => m.id !== match.id));
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Failed to remove match");
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
   const handleRematch = async () => {
     try {
       setRematchError(null);
@@ -99,7 +132,7 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Your Study Buddies</h2>
-          <p className="text-gray-600">Found {matches.length} compatible students</p>
+          <p className="text-muted-foreground">Found {matches.length} compatible students</p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <Button
@@ -118,9 +151,9 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
       {matches.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-2">No matches yet</p>
-            <p className="text-sm text-gray-500">Complete your profile to find study buddies</p>
+            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-2">No matches yet</p>
+            <p className="text-sm text-muted-foreground">Complete your profile to find study buddies</p>
           </CardContent>
         </Card>
       ) : (
@@ -129,28 +162,47 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
             <Card key={match.id} className="shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
                 <div className="flex items-start gap-4">
-                  <Avatar className="h-14 w-14">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-lg">
-                      {match.otherUser?.full_name?.[0]?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg truncate">{match.otherUser?.full_name || "User"}</CardTitle>
-                    <div className="flex items-center gap-2 mt-1">
-                      <GraduationCap className="h-4 w-4 text-gray-500" />
-                      <p className="text-sm text-gray-600 truncate">{match.profile?.major || "Student"}</p>
+                  <button
+                    type="button"
+                    onClick={() => setViewProfileId(match.otherId)}
+                    className="flex items-start gap-4 flex-1 min-w-0 text-left group"
+                    title="View profile"
+                  >
+                    <Avatar className="h-14 w-14">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-lg">
+                        {match.otherUser?.full_name?.[0]?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg truncate group-hover:text-blue-600 transition-colors">{match.otherUser?.full_name || "User"}</CardTitle>
+                      <div className="flex items-center gap-2 mt-1">
+                        <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground truncate">{match.profile?.major || "Student"}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{match.profile?.year_of_study}</p>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">{match.profile?.year_of_study}</p>
+                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                      {Math.min(100, Math.round(match.compatibility_score))}%
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+                      onClick={() => handleRemove(match)}
+                      disabled={removingId === match.id}
+                      title="Remove from matches"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shrink-0">
-                    {Math.min(100, Math.round(match.compatibility_score))}%
-                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 {match.classes && match.classes.length > 0 && (
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <BookOpen className="h-4 w-4" />
                       <span className="font-medium">Classes:</span>
                     </div>
@@ -175,6 +227,18 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
           ))}
         </div>
       )}
+
+      <UserProfileDialog
+        userId={viewProfileId}
+        open={!!viewProfileId}
+        onOpenChange={(open) => {
+          if (!open) setViewProfileId(null);
+        }}
+        onStartChat={() => {
+          const match = matches.find((m) => m.otherId === viewProfileId);
+          if (match) onStartChat?.(match);
+        }}
+      />
     </div>
   );
 }

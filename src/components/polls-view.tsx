@@ -9,8 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, BarChart3, Clock, MapPin, Users, Calendar } from "lucide-react";
+import { Plus, BarChart3, Clock, MapPin, Users, Calendar, MoreVertical, Trash2, Archive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import UserProfileDialog from "./user-profile-dialog";
 
 interface PollsViewProps {
   userId: string;
@@ -20,6 +28,10 @@ export default function PollsView({ userId }: PollsViewProps) {
   const [polls, setPolls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [creatingPoll, setCreatingPoll] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [banner, setBanner] = useState<string | null>(null);
+  const [viewProfileId, setViewProfileId] = useState<string | null>(null);
   const [newPoll, setNewPoll] = useState({
     title: "",
     description: "",
@@ -34,16 +46,16 @@ export default function PollsView({ userId }: PollsViewProps) {
 
   const loadPolls = async () => {
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("polls")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error loading polls:", error);
+      const res = await fetch("/api/polls", { credentials: "include" });
+      const body = (await res.json().catch(() => ({}))) as {
+        polls?: any[];
+        error?: string;
+      };
+      if (!res.ok) {
+        console.error("Error loading polls:", body.error);
+        setPolls([]);
       } else {
-        setPolls(data || []);
+        setPolls(body.polls ?? []);
       }
     } catch (error) {
       console.error("Error loading polls:", error);
@@ -70,30 +82,26 @@ export default function PollsView({ userId }: PollsViewProps) {
   };
 
   const handleCreatePoll = async () => {
+    setFormError(null);
+
     // Validate title
     const trimmedTitle = newPoll.title.trim();
     if (!trimmedTitle) {
-      alert("Please provide a poll title.");
+      setFormError("Please provide a poll title.");
       return;
     }
 
     // Validate options - filter out empty strings and check count
     const validOptions = newPoll.options.filter(opt => opt.trim().length > 0);
     if (validOptions.length < 2) {
-      alert("Please provide at least 2 valid options (non-empty).");
+      setFormError("Please add at least 2 options.");
       return;
     }
 
-    console.log("Creating poll with:", {
-      title: trimmedTitle,
-      options: validOptions,
-      poll_type: newPoll.poll_type,
-      userId
-    });
-
+    setSubmitting(true);
     try {
       const supabase = createClient();
-      
+
       // Create poll
       const { data: pollData, error: pollError } = await supabase
         .from("polls")
@@ -113,8 +121,10 @@ export default function PollsView({ userId }: PollsViewProps) {
 
       if (pollError) {
         console.error("Error creating poll:", pollError);
-        console.error("Error details:", JSON.stringify(pollError, null, 2));
-        alert("Failed to create poll: " + pollError.message + "\n\nCheck the browser console for details.");
+        setFormError(
+          `Failed to create poll: ${pollError.message}` +
+            (pollError.code ? ` (code ${pollError.code})` : "")
+        );
         return;
       }
 
@@ -129,66 +139,88 @@ export default function PollsView({ userId }: PollsViewProps) {
         newOption: ""
       });
       setCreatingPoll(false);
-      
+
       // Reload polls
       await loadPolls();
-      alert("Poll created successfully!");
+      setBanner("Poll created successfully!");
+      setTimeout(() => setBanner(null), 4000);
     } catch (error: any) {
       console.error("Error creating poll:", error);
-      alert("An error occurred: " + (error.message || "Unknown error"));
+      setFormError(error?.message || "An unexpected error occurred.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleVote = async (pollId: string, option: string) => {
+  const handleVote = async (pollId: string, option: string, myVote?: string | null) => {
+    // Clicking the option you already picked does nothing.
+    if (myVote === option) return;
+
     try {
       const supabase = createClient();
-      
-      // Check if user already voted
-      const { data: existingVote } = await supabase
-        .from("poll_votes")
-        .select("*")
-        .eq("poll_id", pollId)
-        .eq("user_id", userId)
-        .single();
 
-      if (existingVote) {
-        alert("You have already voted on this poll.");
+      // Records or switches the vote and adjusts the tallies atomically. A
+      // secure function is used so non-owners can vote even though the poll's
+      // UPDATE policy only allows the owner to edit it.
+      const { error } = await supabase.rpc("cast_poll_vote", {
+        p_poll_id: pollId,
+        p_option: option,
+      });
+
+      if (error) {
+        console.error("Error voting:", error);
+        setBanner(null);
+        alert("Failed to vote: " + (error.message || "Unknown error"));
         return;
       }
-
-      // Get current poll
-      const { data: poll } = await supabase
-        .from("polls")
-        .select("*")
-        .eq("id", pollId)
-        .single();
-
-      if (!poll) return;
-
-      // Update votes
-      const updatedVotes = { ...poll.votes };
-      updatedVotes[option] = (updatedVotes[option] || 0) + 1;
-
-      // Update poll
-      await supabase
-        .from("polls")
-        .update({ votes: updatedVotes })
-        .eq("id", pollId);
-
-      // Record vote
-      await supabase
-        .from("poll_votes")
-        .insert({
-          poll_id: pollId,
-          user_id: userId,
-          selected_option: option
-        });
 
       // Reload polls
       await loadPolls();
     } catch (error: any) {
       console.error("Error voting:", error);
       alert("Failed to vote: " + (error.message || "Unknown error"));
+    }
+  };
+
+  const handleArchivePoll = async (pollId: string) => {
+    try {
+      const res = await fetch("/api/polls/archive", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pollId }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        alert(body.error || "Failed to archive poll");
+        return;
+      }
+      setPolls((prev) => prev.filter((p) => p.id !== pollId));
+      setBanner("Poll archived. Find it in Settings → Archived.");
+      setTimeout(() => setBanner(null), 4000);
+    } catch (e: any) {
+      alert(e?.message || "Failed to archive poll");
+    }
+  };
+
+  const handleDeletePoll = async (pollId: string) => {
+    if (
+      !window.confirm(
+        "Delete this poll permanently? This removes it and all its votes for everyone."
+      )
+    ) {
+      return;
+    }
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.from("polls").delete().eq("id", pollId);
+      if (error) {
+        alert("Failed to delete poll: " + error.message);
+        return;
+      }
+      setPolls((prev) => prev.filter((p) => p.id !== pollId));
+    } catch (e: any) {
+      alert(e?.message || "Failed to delete poll");
     }
   };
 
@@ -222,18 +254,42 @@ export default function PollsView({ userId }: PollsViewProps) {
     return Object.values(votes || {}).reduce((sum, count) => sum + count, 0);
   };
 
+  const formatDateTime = (value?: string) => {
+    if (!value) return "";
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
   if (loading) {
     return <div className="text-center py-12">Loading polls...</div>;
   }
 
   return (
     <div className="space-y-6">
+      {banner && (
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          {banner}
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Polls</h2>
-          <p className="text-gray-600 mt-1">Create and vote on polls about study preferences</p>
+          <h2 className="text-3xl font-bold text-foreground">Polls</h2>
+          <p className="text-muted-foreground mt-1">Create and vote on polls about study preferences</p>
         </div>
-        <Dialog open={creatingPoll} onOpenChange={setCreatingPoll}>
+        <Dialog
+          open={creatingPoll}
+          onOpenChange={(open) => {
+            setCreatingPoll(open);
+            if (open) setFormError(null);
+          }}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -327,14 +383,26 @@ export default function PollsView({ userId }: PollsViewProps) {
               </div>
             </div>
 
+            {formError && (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {formError}
+              </div>
+            )}
+
             <div className="flex gap-2 pt-4">
-              <Button onClick={handleCreatePoll} className="flex-1">
-                Create Poll
+              <Button
+                onClick={handleCreatePoll}
+                className="flex-1"
+                disabled={submitting}
+              >
+                {submitting ? "Creating..." : "Create Poll"}
               </Button>
               <Button
                 variant="outline"
+                disabled={submitting}
                 onClick={() => {
                   setCreatingPoll(false);
+                  setFormError(null);
                   setNewPoll({
                     title: "",
                     description: "",
@@ -355,8 +423,8 @@ export default function PollsView({ userId }: PollsViewProps) {
       {polls.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No polls yet. Be the first to create one!</p>
+            <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No polls yet. Be the first to create one!</p>
           </CardContent>
         </Card>
       ) : (
@@ -376,9 +444,64 @@ export default function PollsView({ userId }: PollsViewProps) {
                       {poll.description && (
                         <CardDescription className="mt-2">{poll.description}</CardDescription>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => poll.user_id && setViewProfileId(poll.user_id)}
+                        className="mt-3 flex items-center gap-2 group"
+                        title="View profile"
+                      >
+                        <Avatar className="h-6 w-6">
+                          {poll.author?.profile_picture_url && (
+                            <AvatarImage
+                              src={poll.author.profile_picture_url}
+                              alt={poll.author?.full_name || "User"}
+                            />
+                          )}
+                          <AvatarFallback className="bg-blue-600 text-white text-xs">
+                            {poll.author?.full_name?.[0]?.toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm text-muted-foreground group-hover:text-blue-600 transition-colors">
+                          {poll.author?.full_name || "Unknown user"}
+                        </span>
+                      </button>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {totalVotes} {totalVotes === 1 ? "vote" : "votes"}
+                    <div className="flex items-start gap-1 shrink-0">
+                      <div className="text-right">
+                        <div className="text-sm text-muted-foreground">
+                          {totalVotes} {totalVotes === 1 ? "vote" : "votes"}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {formatDateTime(poll.created_at)}
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground"
+                            title="Options"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleArchivePoll(poll.id)}>
+                            <Archive className="h-4 w-4 mr-2" />
+                            Archive
+                          </DropdownMenuItem>
+                          {poll.user_id === userId && (
+                            <DropdownMenuItem
+                              onClick={() => handleDeletePoll(poll.id)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </CardHeader>
@@ -387,15 +510,24 @@ export default function PollsView({ userId }: PollsViewProps) {
                     {poll.options.map((option: string) => {
                       const votes = poll.votes?.[option] || 0;
                       const percentage = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
+                      const isMyVote = poll.myVote === option;
+                      const hasVoted = !!poll.myVote;
                       return (
                         <div key={option} className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">{option}</span>
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm font-medium">
+                              {option}
+                              {isMyVote && (
+                                <span className="ml-2 text-xs font-normal text-blue-600">
+                                  Your vote
+                                </span>
+                              )}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
                               {votes} ({percentage.toFixed(1)}%)
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-muted rounded-full h-2">
                             <div
                               className="bg-blue-600 h-2 rounded-full transition-all"
                               style={{ width: `${percentage}%` }}
@@ -403,11 +535,16 @@ export default function PollsView({ userId }: PollsViewProps) {
                           </div>
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => handleVote(poll.id, option)}
+                            variant={isMyVote ? "default" : "outline"}
+                            onClick={() => handleVote(poll.id, option, poll.myVote)}
+                            disabled={isMyVote}
                             className="w-full"
                           >
-                            Vote for {option}
+                            {isMyVote
+                              ? "✓ Voted"
+                              : hasVoted
+                              ? `Switch to ${option}`
+                              : `Vote for ${option}`}
                           </Button>
                         </div>
                       );
@@ -419,6 +556,14 @@ export default function PollsView({ userId }: PollsViewProps) {
           })}
         </div>
       )}
+
+      <UserProfileDialog
+        userId={viewProfileId}
+        open={!!viewProfileId}
+        onOpenChange={(open) => {
+          if (!open) setViewProfileId(null);
+        }}
+      />
     </div>
   );
 }

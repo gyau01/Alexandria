@@ -3,6 +3,8 @@
 CREATE TABLE IF NOT EXISTS public.community_posts (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id text REFERENCES public.users(user_id) ON DELETE CASCADE,
+    author_name text,
+    author_avatar_url text,
     title text NOT NULL,
     content text NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -13,6 +15,8 @@ CREATE TABLE IF NOT EXISTS public.community_comments (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     post_id uuid REFERENCES public.community_posts(id) ON DELETE CASCADE,
     user_id text REFERENCES public.users(user_id) ON DELETE CASCADE,
+    author_name text,
+    author_avatar_url text,
     content text NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );

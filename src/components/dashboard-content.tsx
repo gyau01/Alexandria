@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, MessageCircle, BarChart3, MessageSquare } from "lucide-react";
 import MatchesView from "./matches-view";
@@ -9,6 +9,7 @@ import ChatView from "./chat-view";
 import ProfileView from "./profile-view";
 import PollsView from "./polls-view";
 import CommunityBoard from "./community-board";
+import SettingsView from "./settings-view";
 
 interface DashboardContentProps {
   userId: string;
@@ -16,6 +17,7 @@ interface DashboardContentProps {
 
 export default function DashboardContent({ userId }: DashboardContentProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "matches");
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
@@ -26,14 +28,21 @@ export default function DashboardContent({ userId }: DashboardContentProps) {
     }
   }, [tabParam]);
 
+  // Keep the URL in sync with the active tab so links like ?tab=settings
+  // always trigger a change (avoids a "stuck" query param).
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.replace(`/dashboard?tab=${value}`, { scroll: false });
+  };
+
   const handleStartChat = (match: any) => {
     setSelectedMatch(match);
-    setActiveTab("chat");
+    handleTabChange("chat");
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="matches" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -71,6 +80,10 @@ export default function DashboardContent({ userId }: DashboardContentProps) {
 
         <TabsContent value="profile">
           <ProfileView userId={userId} />
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <SettingsView userId={userId} />
         </TabsContent>
       </Tabs>
     </div>
