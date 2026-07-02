@@ -8,8 +8,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cramly",
+  title: "Alexandria",
   description: "Connect with compatible study partners based on your classes and preferences",
+  applicationName: "Alexandria",
 };
 
 export default function RootLayout({

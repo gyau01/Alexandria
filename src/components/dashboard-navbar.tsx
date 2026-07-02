@@ -9,11 +9,11 @@ export default function DashboardNavbar() {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
           <Image 
-            src="/cramlylogo.png" 
-            alt="Cramly Logo" 
-            width={240} 
-            height={80}
-            className="h-16 w-auto"
+            src="/alexandria_logo.png?v=2" 
+            alt="Alexandria Logo" 
+            width={360} 
+            height={120}
+            className="h-24 w-auto"
             priority
           />
         </Link>
