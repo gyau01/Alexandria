@@ -1,14 +1,14 @@
-import {useNavigate } from 'react-router-dom';
+"use client"
+import {useRouter } from 'next/navigation';
 
 export default function NoSub(){
-	const nav = useNavigate();
+	const nav = useRouter();
 	return(
 		<div>
 			<p> Thanks for using Alexandria, unfortuntely you've used up all your free instances</p>
-				<button onClick={() => navigate('/pricing')}>
+				<button onClick={() => nav.push('/pricing')}>
 					Please Subscribe Today!
 				</button>
-			</div>
+		</div>
 		);
-	)
 }
