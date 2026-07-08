@@ -41,7 +41,7 @@ export default function OptionCard({
 
     // Bitmask sum: each option.id is a power of 2, so this sum is a
     // unique key per combination of selected options.
-    const planKey = [...selected].reduce((sum, id) => sum + id, 0);
+    const planKey = Array.from(selected).reduce((sum, id) => sum + id, 0);
 
     try {
       const { data, error } = await supabase.functions.invoke(

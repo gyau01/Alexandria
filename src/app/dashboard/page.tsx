@@ -25,7 +25,7 @@ export default async function Dashboard() {
   const profileCompleted = profile?.profile_completed;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/40">
       {!profileCompleted ? (
         <ProfileSetup />
       ) : (

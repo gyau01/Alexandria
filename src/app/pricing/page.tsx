@@ -78,7 +78,7 @@ export default async function Pricing() {
             <div className="container mx-auto px-4 py-16">
                 <div className="text-center mb-16">
                     <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-4">
-                        Simple, Transparent <span className="bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">Pricing</span>
+                        Simple, Customizable <span className="bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">Pricing</span>
                     </h1>
                     <p className="text-xl text-blue-200 max-w-2xl mx-auto">
                         Choose the perfect plan for your study needs

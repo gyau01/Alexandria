@@ -1,6 +1,7 @@
 import { createClient as createServerClient } from "../../../../../supabase/server";
 import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { getRedis, removedMatchesKey } from "@/lib/redis";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey =
@@ -65,8 +66,27 @@ export async function GET() {
     (a, b) => (b.compatibility_score ?? 0) - (a.compatibility_score ?? 0)
   );
 
+  // Filter out matches the user has removed (stored in a Redis hash).
+  const redis = getRedis();
+  let removedIds: string[] = [];
+  if (redis) {
+    try {
+      const removed = await redis.hgetall<Record<string, string>>(
+        removedMatchesKey(uid)
+      );
+      removedIds = removed ? Object.keys(removed) : [];
+    } catch (e) {
+      console.error("matches/me redis:", e);
+    }
+  }
+
+  const visibleMatches = mergedMatches.filter((match) => {
+    const otherId = match.user1_id === uid ? match.user2_id : match.user1_id;
+    return !removedIds.includes(otherId);
+  });
+
   const matchDetails = await Promise.all(
-    mergedMatches.map(async (match) => {
+    visibleMatches.map(async (match) => {
       const otherId =
         match.user1_id === uid ? match.user2_id : match.user1_id;
       const [otherUserRes, profileRes, classesRes] = await Promise.all([
