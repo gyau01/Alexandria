@@ -1,4 +1,4 @@
-import { createClient } from "../../../supabase/server";
+import { createClient } from "../../supabase/server";
 import { redirect } from "next/navigation";
 import CommunityBoard from "@/components/community-board";
 import PollsView from "@/components/polls-view";

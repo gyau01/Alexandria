@@ -33,8 +33,12 @@ export default async function Dashboard() {
       ) : (
         <>
           <DashboardNavbar />
-						<CheckSub/>
-          <DashboardContent userId={user.id} />
+					<CheckSub/>
+          <DashboardContent
+						userId={user.id}
+						polls ={<CheckSub option={2} />}
+						board = {<CheckSub option = {3}/>}
+						/>
         </>
       )}
     </div>
