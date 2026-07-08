@@ -3,6 +3,8 @@ import { createClient } from "../../../supabase/server";
 import { redirect } from "next/navigation";
 import ProfileSetup from "@/components/profile-setup";
 import DashboardContent from "@/components/dashboard-content";
+import CheckSub from "@/utils/handler";
+
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -31,6 +33,7 @@ export default async function Dashboard() {
       ) : (
         <>
           <DashboardNavbar />
+						<CheckSub/>
           <DashboardContent userId={user.id} />
         </>
       )}
