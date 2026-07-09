@@ -2,7 +2,7 @@ import { createClient } from "../../supabase/server";
 import { redirect } from "next/navigation";
 import CommunityBoard from "@/components/community-board";
 import PollsView from "@/components/polls-view";
-
+import NoSub from "@/components/nosub";
 
 export default async function CheckSub({ option }: { option: number }) {
 	const supabase = await createClient();
@@ -35,7 +35,7 @@ export default async function CheckSub({ option }: { option: number }) {
 			}
 			else {
 				//gate shit 
-				return <p> please subscribe </p>;
+				return <NoSub/>
 			}
 		case 3:
 			if( flag ===1 ) {
@@ -45,7 +45,7 @@ export default async function CheckSub({ option }: { option: number }) {
 			}
 			else {
 				//gate shit
-				return <p> PLease subscribe</p>;
+				return <NoSub/>
 			}
 						
 		default: 
