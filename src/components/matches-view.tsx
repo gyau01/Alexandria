@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Users, MessageCircle, BookOpen, GraduationCap, X } from "lucide-react";
 import { createClient } from "../../supabase/client";
 import UserProfileDialog from "./user-profile-dialog";
+import { SCORING } from "@/lib/matchScoring";
 
 interface MatchesViewProps {
   userId: string;
@@ -184,7 +185,10 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
                   </button>
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-                      {Math.min(100, Math.round(match.compatibility_score))}%
+                      {Math.min(
+                        100,
+                        Math.round((match.compatibility_score / SCORING.maxTotal) * 100)
+                      )}%
                     </Badge>
                     <Button
                       variant="ghost"

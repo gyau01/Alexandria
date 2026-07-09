@@ -73,8 +73,14 @@ export async function runMatchCalculation(
     const userPref = userPreferences.class_matching_preference || "specific";
     const theirPref = theirPreferences.class_matching_preference || "specific";
 
+    const classWeight =
+    userPref === "specific"
+      ? SCORING.classes.weight * SCORING.priorityMultiplier
+      : SCORING.classes.weight;
+
     if (userPref === "generic" || theirPref === "generic") {
-      const extractSubject = (code: string) => code.match(/^([A-Z]+)/)?.[1] || "";
+      const extractSubject = (code: string) =>
+        code.match(/^([A-Z]+)/)?.[1] || "";
 
       const userSubjects = new Set(userClassCodes.map(extractSubject));
       const theirSubjects = new Set(theirClassCodes.map(extractSubject));
@@ -92,7 +98,9 @@ export async function runMatchCalculation(
           normalizeClassCode(theirPreferences.selected_class_code)
         );
       } else {
-        classMatch = userClassCodes.some((c) => theirClassCodes.includes(c));
+        classMatch = userClassCodes.some((c) =>
+          theirClassCodes.includes(c)
+        );
       }
     }
 
@@ -116,7 +124,7 @@ export async function runMatchCalculation(
     scoreTotal += applyScore(
       matchCriteria.classes,
       SCORING.classes.points,
-      SCORING.classes.weight,
+      classWeight,
       userPreferences.class_priority
     );
 

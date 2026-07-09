@@ -2,6 +2,7 @@
 export const SCORING = {
   minTotal: 1200,
   priorityMultiplier: 1.5,
+  maxTotal: 2250,
 
   classes: { points: 600, weight: 1 },
   major:   { points: 600, weight: 1 },
