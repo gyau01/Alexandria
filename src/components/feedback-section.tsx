@@ -56,34 +56,34 @@ export default function FeedbackSection() {
   };
 
   return (
-    <section className="py-20 px-4 bg-white">
+    <section className="py-20 px-4 bg-background">
       <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mb-6 shadow-lg">
             <MessageSquareText className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
             Send Us Your{" "}
             <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Feedback
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Found a bug or have an idea? Send a note straight to our technical
             team and help us make Cramly better.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-gray-100">
+        <div className="bg-card rounded-2xl shadow-xl p-8 md:p-12 border border-border">
           {isSuccess ? (
             <div className="text-center py-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-                <CheckCircle2 className="w-12 h-12 text-green-600" />
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-950 rounded-full mb-6">
+                <CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              <h3 className="text-2xl font-bold text-foreground mb-2">
                 Feedback received!
               </h3>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Thanks for helping us improve. Our team will review your message.
               </p>
             </div>
@@ -93,9 +93,9 @@ export default function FeedbackSection() {
                 <div>
                   <label
                     htmlFor="fb-name"
-                    className="block text-sm font-semibold text-gray-700 mb-2"
+                    className="block text-sm font-semibold text-foreground mb-2"
                   >
-                    Name <span className="text-gray-400 font-normal">(optional)</span>
+                    Name <span className="text-muted-foreground font-normal">(optional)</span>
                   </label>
                   <Input
                     id="fb-name"
@@ -110,9 +110,9 @@ export default function FeedbackSection() {
                 <div>
                   <label
                     htmlFor="fb-email"
-                    className="block text-sm font-semibold text-gray-700 mb-2"
+                    className="block text-sm font-semibold text-foreground mb-2"
                   >
-                    Email <span className="text-gray-400 font-normal">(optional)</span>
+                    Email <span className="text-muted-foreground font-normal">(optional)</span>
                   </label>
                   <Input
                     id="fb-email"
@@ -129,7 +129,7 @@ export default function FeedbackSection() {
               <div>
                 <label
                   htmlFor="fb-category"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-foreground mb-2"
                 >
                   Topic
                 </label>
@@ -138,7 +138,7 @@ export default function FeedbackSection() {
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   disabled={isSubmitting}
-                  className="h-12 w-full rounded-md border border-input bg-white px-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-12 w-full rounded-md border border-input bg-background px-3 text-base text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c.value} value={c.value}>
@@ -151,7 +151,7 @@ export default function FeedbackSection() {
               <div>
                 <label
                   htmlFor="fb-message"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
+                  className="block text-sm font-semibold text-foreground mb-2"
                 >
                   Your feedback
                 </label>
@@ -166,13 +166,13 @@ export default function FeedbackSection() {
                   className="text-base"
                   disabled={isSubmitting}
                 />
-                <p className="mt-1 text-right text-xs text-gray-400">
+                <p className="mt-1 text-right text-xs text-muted-foreground">
                   {message.length}/5000
                 </p>
               </div>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
                   {error}
                 </div>
               )}
@@ -198,7 +198,7 @@ export default function FeedbackSection() {
           )}
         </div>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-6">
           We read every message. Leave your email if you&apos;d like us to follow
           up.
         </p>

@@ -1,11 +1,6 @@
 import { createClient as createServerClient } from "../../../../../supabase/server";
-import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { getRedis, removedMatchesKey } from "@/lib/redis";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey =
-  process.env.SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+import { getAdminClient } from "@/lib/removed-matches";
 
 // Lists the study buddies the current user has removed, so they can restore them.
 export async function GET() {
@@ -18,43 +13,45 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const redis = getRedis();
-  if (!redis) {
+  const admin = getAdminClient();
+  if (!admin) {
     return NextResponse.json({ removed: [] });
   }
 
   const uid = user.id;
-  const hash = await redis.hgetall<Record<string, string>>(
-    removedMatchesKey(uid)
-  );
-  const entries = hash ? Object.entries(hash) : [];
+  const { data: rows, error } = await admin
+    .from("removed_matches")
+    .select("other_user_id, removed_at")
+    .eq("user_id", uid)
+    .order("removed_at", { ascending: false });
+
+  if (error) {
+    console.error("matches/removed:", error);
+    return NextResponse.json({ removed: [] });
+  }
+
+  const entries = rows ?? [];
   if (entries.length === 0) {
     return NextResponse.json({ removed: [] });
   }
 
-  let userMap: Record<string, any> = {};
-  if (supabaseUrl && serviceKey) {
-    const admin = createSupabaseAdmin(supabaseUrl, serviceKey);
-    const ids = entries.map(([id]) => id);
-    const { data: users } = await admin
-      .from("users")
-      .select("user_id, full_name, email")
-      .in("user_id", ids);
-    (users || []).forEach((u) => {
-      userMap[u.user_id] = u;
-    });
-  }
+  const ids = entries.map((r) => r.other_user_id);
+  const { data: users } = await admin
+    .from("users")
+    .select("user_id, full_name, email")
+    .in("user_id", ids);
 
-  const removed = entries
-    .map(([id, ts]) => ({
-      otherId: id,
-      removedAt: ts,
-      otherUser: userMap[id] ?? null,
-    }))
-    .sort(
-      (a, b) =>
-        new Date(b.removedAt).getTime() - new Date(a.removedAt).getTime()
-    );
+  const userMap: Record<string, { full_name: string | null; email: string | null }> =
+    {};
+  (users || []).forEach((u) => {
+    userMap[u.user_id] = { full_name: u.full_name, email: u.email };
+  });
+
+  const removed = entries.map((row) => ({
+    otherId: row.other_user_id,
+    removedAt: row.removed_at,
+    otherUser: userMap[row.other_user_id] ?? null,
+  }));
 
   return NextResponse.json({ removed });
 }

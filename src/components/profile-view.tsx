@@ -1060,7 +1060,7 @@ export default function ProfileView({ userId }: ProfileViewProps) {
             <p className="text-sm font-medium text-foreground mb-3">Preferred Study Times</p>
             <div className="flex flex-wrap gap-2">
               {preferences?.study_time_preference?.map((time: string) => (
-                <Badge key={time} variant="outline" className="bg-green-50 border-green-200">
+                <Badge key={time} variant="outline" className="bg-green-50 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800">
                   {time}
                 </Badge>
               ))}
@@ -1071,7 +1071,7 @@ export default function ProfileView({ userId }: ProfileViewProps) {
             <p className="text-sm font-medium text-foreground mb-3">Preferred Locations</p>
             <div className="flex flex-wrap gap-2">
               {preferences?.study_location_preference?.map((location: string) => (
-                <Badge key={location} variant="outline" className="bg-purple-50 border-purple-200">
+                <Badge key={location} variant="outline" className="bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800">
                   <MapPin className="h-3 w-3 mr-1" />
                   {location}
                 </Badge>
@@ -1081,7 +1081,7 @@ export default function ProfileView({ userId }: ProfileViewProps) {
 
           <div>
             <p className="text-sm font-medium text-foreground mb-2">Group Size Preference</p>
-            <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+            <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
               {preferences?.group_size_preference}
             </Badge>
           </div>
@@ -1090,7 +1090,7 @@ export default function ProfileView({ userId }: ProfileViewProps) {
             <p className="text-sm font-medium text-foreground mb-3">Study Style</p>
             <div className="flex flex-wrap gap-2">
               {preferences?.study_style?.map((style: string) => (
-                <Badge key={style} variant="outline" className="bg-orange-50 border-orange-200">
+                <Badge key={style} variant="outline" className="bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800">
                   {style}
                 </Badge>
               ))}
@@ -1101,8 +1101,8 @@ export default function ProfileView({ userId }: ProfileViewProps) {
             <p className="text-sm font-medium text-foreground mb-2">Class Matching Preference</p>
             <Badge className={`${
               preferences?.class_matching_preference === "generic"
-                ? "bg-purple-100 text-purple-800 border-purple-200"
-                : "bg-indigo-100 text-indigo-800 border-indigo-200"
+                ? "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800"
+                : "bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800"
             }`}>
               {preferences?.class_matching_preference === "generic" 
                 ? "Generic Class Matching" 
