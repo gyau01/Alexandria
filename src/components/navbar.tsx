@@ -10,7 +10,7 @@ export default async function Navbar() {
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <nav className="w-full border-b border-gray-200 bg-white py-3 shadow-sm relative z-50">
+    <nav className="w-full border-b border-border bg-background py-3 shadow-sm relative z-50">
       <div className="container mx-auto px-4 flex justify-between items-center">
 
         {/* Logo */}
@@ -55,7 +55,7 @@ export default async function Navbar() {
             <>
               <Link
                 href="/sign-in"
-                className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground"
               >
                 Sign In
               </Link>

@@ -21,15 +21,15 @@ export default function CommunityPage() {
       </section>
 
       {/* The Problem Section */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-background">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
               The Problem
             </h2>
           </div>
           
-          <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
+          <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
             <p>
               Many students end up studying alone, feeling anxious, falling behind, and worrying about failing. 
               Research shows that <span className="font-semibold text-blue-600">collaborative studying can boost GPA by up to 25%</span> (QuadC, 2023). 
@@ -58,7 +58,7 @@ export default function CommunityPage() {
       <section className="py-20 px-4 bg-gradient-to-b from-white via-blue-50 to-white">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
               The Solution
             </h2>
           </div>
@@ -86,7 +86,7 @@ export default function CommunityPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 hover:bg-white/15 transition-all">
+            <div className="bg-background/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 hover:bg-background/15 transition-all">
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 shadow-lg">
                 <BookOpen className="h-7 w-7 text-white" />
               </div>
@@ -96,7 +96,7 @@ export default function CommunityPage() {
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 hover:bg-white/15 transition-all">
+            <div className="bg-background/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 hover:bg-background/15 transition-all">
               <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 shadow-lg">
                 <Target className="h-7 w-7 text-white" />
               </div>
@@ -106,7 +106,7 @@ export default function CommunityPage() {
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 hover:bg-white/15 transition-all">
+            <div className="bg-background/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 hover:bg-background/15 transition-all">
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-6 shadow-lg">
                 <Users className="h-7 w-7 text-white" />
               </div>
@@ -120,13 +120,13 @@ export default function CommunityPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-background">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
               Platform Features
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Everything you need for effective collaborative studying
             </p>
           </div>
@@ -138,8 +138,8 @@ export default function CommunityPage() {
                   <MessageSquare className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Messaging & Communication</h3>
-                  <p className="text-gray-700">Connect with your study partners through real-time messaging and group chats.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Messaging & Communication</h3>
+                  <p className="text-muted-foreground">Connect with your study partners through real-time messaging and group chats.</p>
                 </div>
               </div>
             </div>
@@ -150,8 +150,8 @@ export default function CommunityPage() {
                   <Calendar className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Group Sessions</h3>
-                  <p className="text-gray-700">Schedule and organize study sessions with your group members.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Group Sessions</h3>
+                  <p className="text-muted-foreground">Schedule and organize study sessions with your group members.</p>
                 </div>
               </div>
             </div>
@@ -162,8 +162,8 @@ export default function CommunityPage() {
                   <Users className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Study Groups</h3>
-                  <p className="text-gray-700">Join or form study groups of up to twenty members based on your preferences.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Study Groups</h3>
+                  <p className="text-muted-foreground">Join or form study groups of up to twenty members based on your preferences.</p>
                 </div>
               </div>
             </div>
@@ -174,8 +174,8 @@ export default function CommunityPage() {
                   <BookOpen className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Discussion Boards</h3>
-                  <p className="text-gray-700">Engage in course-specific discussions and share knowledge with peers.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Discussion Boards</h3>
+                  <p className="text-muted-foreground">Engage in course-specific discussions and share knowledge with peers.</p>
                 </div>
               </div>
             </div>
@@ -186,8 +186,8 @@ export default function CommunityPage() {
                   <Target className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Focus Sessions</h3>
-                  <p className="text-gray-700">Join structured focus sessions to maintain productivity and accountability.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Focus Sessions</h3>
+                  <p className="text-muted-foreground">Join structured focus sessions to maintain productivity and accountability.</p>
                 </div>
               </div>
             </div>
@@ -198,8 +198,8 @@ export default function CommunityPage() {
                   <TrendingUp className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Shared Resources</h3>
-                  <p className="text-gray-700">Access and share study materials, notes, and resources with your group.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Shared Resources</h3>
+                  <p className="text-muted-foreground">Access and share study materials, notes, and resources with your group.</p>
                 </div>
               </div>
             </div>
@@ -210,8 +210,8 @@ export default function CommunityPage() {
                   <CheckCircle className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Poll & Reserve</h3>
-                  <p className="text-gray-700">Use polls to coordinate study times and reserve study rooms at your university.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Poll & Reserve</h3>
+                  <p className="text-muted-foreground">Use polls to coordinate study times and reserve study rooms at your university.</p>
                 </div>
               </div>
             </div>
@@ -222,8 +222,8 @@ export default function CommunityPage() {
                   <Users className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">User-Friendly Design</h3>
-                  <p className="text-gray-700">Intuitive interface designed for students, making it easy to connect and collaborate.</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">User-Friendly Design</h3>
+                  <p className="text-muted-foreground">Intuitive interface designed for students, making it easy to connect and collaborate.</p>
                 </div>
               </div>
             </div>
@@ -241,7 +241,7 @@ export default function CommunityPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <div className="bg-background/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
               <div className="text-5xl font-extrabold text-cyan-300 mb-4">25%</div>
               <h3 className="text-2xl font-bold mb-3">GPA Boost</h3>
               <p className="text-blue-100">
@@ -249,7 +249,7 @@ export default function CommunityPage() {
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <div className="bg-background/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
               <div className="text-5xl font-extrabold text-cyan-300 mb-4">1.5x</div>
               <h3 className="text-2xl font-bold mb-3">Lower Failure Rate</h3>
               <p className="text-blue-100">
@@ -273,7 +273,7 @@ export default function CommunityPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a
                 href="/sign-up"
-                className="group relative px-10 py-5 bg-white text-blue-600 rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl hover:shadow-2xl"
+                className="group relative px-10 py-5 bg-background text-blue-600 rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl hover:shadow-2xl"
               >
                 Get Started Free
                 <ArrowRight className="inline-block ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

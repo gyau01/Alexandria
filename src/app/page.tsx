@@ -3,6 +3,7 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import WaitlistSection from "@/components/waitlist-section";
 import FeedbackSection from "@/components/feedback-section";
+import FaqSection from "@/components/faq-section";
 import { createClient } from "../../supabase/server";
 import { ArrowUpRight, Users, MessageSquare, Target, Shield } from 'lucide-react';
 
@@ -11,7 +12,7 @@ export default async function Home() {
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Navbar />
       
       {/* Hero Section */}
@@ -40,20 +41,20 @@ export default async function Home() {
       <WaitlistSection />
 
       {/* Platform Preview Section */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-background">
         <div className="container mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
             {/* Left: Text Content */}
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Step 1: Create Profile
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-muted-foreground">
                 Students add their university, major, enrolled classes, GPA, and study preferences (time, location, group size, study style).
               </p>
             </div>
             {/* Right: Image Placeholder */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg aspect-square flex items-center justify-center min-h-[300px] border border-blue-100 overflow-hidden">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 rounded-lg aspect-square flex items-center justify-center min-h-[300px] border border-blue-100 dark:border-blue-900 overflow-hidden">
               <img 
                 src="/profile1.png" 
                 alt="Student Profile Example" 
@@ -64,16 +65,16 @@ export default async function Home() {
 
           <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
             {/* Left: Profile Images */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8 min-h-[800px] border border-blue-100">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 rounded-lg p-8 min-h-[800px] border border-blue-100 dark:border-blue-900">
               <div className="grid grid-cols-1 gap-6 h-full">
-                <div className="bg-white rounded-xl overflow-hidden shadow-md">
+                <div className="bg-card rounded-xl overflow-hidden shadow-md">
                   <img 
                     src="/profile2.png" 
                     alt="Student Profile Example 2" 
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="bg-white rounded-xl overflow-hidden shadow-md">
+                <div className="bg-card rounded-xl overflow-hidden shadow-md">
                   <img 
                     src="/profile3.png" 
                     alt="Student Profile Example 3" 
@@ -84,16 +85,16 @@ export default async function Home() {
             </div>
             {/* Right: Text Content */}
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Step 2: Smart Matching
               </h2>
-              <p className="text-lg text-gray-600 mb-32">
+              <p className="text-lg text-muted-foreground mb-32">
                 Our algorithm analyzes compatibility based on shared classes, similar study preferences, availability overlap, and academic goals to find your perfect study partners.
               </p>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Step 3: Connect & Study
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-muted-foreground">
                 Once matched, you can message your study partners, schedule group sessions, share resources, and form study groups of up to 20 members.
               </p>
             </div>
@@ -103,38 +104,38 @@ export default async function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-gradient-to-b from-white via-blue-50 to-white">
+      <section id="features" className="py-24 bg-gradient-to-b from-background via-blue-50/50 to-background dark:via-blue-950/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
               How It Works
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">Find study partners who match your academic profile and study style in three simple steps</p>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Find study partners who match your academic profile and study style in three simple steps</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="group relative text-center p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="group relative text-center p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform">
                 1
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Create Your Profile</h3>
-              <p className="text-gray-700">Add your major, classes, GPA, and study preferences to help us understand your needs</p>
+              <h3 className="text-xl font-bold text-foreground mb-3">Create Your Profile</h3>
+              <p className="text-muted-foreground">Add your major, classes, GPA, and study preferences to help us understand your needs</p>
             </div>
 
-            <div className="group relative text-center p-8 rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-100 border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="group relative text-center p-8 rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-950/50 dark:to-blue-950/40 border-2 border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="bg-gradient-to-br from-indigo-500 to-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform">
                 2
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Get Matched</h3>
-              <p className="text-gray-700">Our algorithm finds compatible study partners based on shared classes and preferences</p>
+              <h3 className="text-xl font-bold text-foreground mb-3">Get Matched</h3>
+              <p className="text-muted-foreground">Our algorithm finds compatible study partners based on shared classes and preferences</p>
             </div>
 
-            <div className="group relative text-center p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="group relative text-center p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-950/50 dark:to-cyan-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold shadow-lg group-hover:scale-110 transition-transform">
                 3
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Start Studying</h3>
-              <p className="text-gray-700">Connect via chat and coordinate study sessions with your new study buddies</p>
+              <h3 className="text-xl font-bold text-foreground mb-3">Start Studying</h3>
+              <p className="text-muted-foreground">Connect via chat and coordinate study sessions with your new study buddies</p>
             </div>
           </div>
         </div>
@@ -170,6 +171,8 @@ export default async function Home() {
 
       {/* Feedback Section */}
       <FeedbackSection />
+
+      <FaqSection />
 
       <Footer />
     </div>
