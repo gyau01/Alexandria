@@ -24,7 +24,7 @@ export const signUpAction = async (formData: FormData) => {
     process.env.NEXT_PUBLIC_SITE_URL ??
     "http://localhost:3000";
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -40,8 +40,14 @@ export const signUpAction = async (formData: FormData) => {
   if (error) {
     return encodedRedirect("error", "/sign-up", error.message);
   }
+	if(data.user){
+		const {error :usageError } = await supabase.from('user_usage').insert({id:data.user.id});
+			if(usageError){
+				console.error("failed to create usage row:",usageError.message);
+			}
+	}
 
-  return encodedRedirect(
+return encodedRedirect(
     "success",
     "/sign-up",
     "Thanks for signing up! Please check your email for a verification link.",

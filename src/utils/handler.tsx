@@ -21,7 +21,7 @@ export default async function CheckSub({ option }: { option: number }) {
 	const sub_id = active.subscription;
 
 	const bit = 1 << option;
-
+	
 	if ( (sub_id & bit) !== 0 ){
 		flag = 1;
 	}
@@ -33,8 +33,7 @@ export default async function CheckSub({ option }: { option: number }) {
 					<PollsView userId={user.id}/>
 				)
 			}
-			else {
-				//gate shit 
+			else{
 				return <NoSub/>
 			}
 		case 3:
