@@ -89,7 +89,35 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
   useEffect(() => {
     loadMatches();
     loadGroups();
+
+    const onMatchRemoved = () => {
+      loadMatches();
+    };
+    const onMatchRestored = () => {
+      loadMatches();
+    };
+    window.addEventListener("match-removed", onMatchRemoved);
+    window.addEventListener("match-restored", onMatchRestored);
+    return () => {
+      window.removeEventListener("match-removed", onMatchRemoved);
+      window.removeEventListener("match-restored", onMatchRestored);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
+
+  useEffect(() => {
+    if (selectedConv?.kind !== "dm") return;
+    const stillVisible = matches.some(
+      (m) =>
+        m.id === selectedConv.id ||
+        m.allMatchIds?.includes(selectedConv.id) ||
+        m.otherId === selectedConv.otherId
+    );
+    if (!stillVisible) {
+      setSelectedConv(null);
+      setMessages([]);
+    }
+  }, [matches, selectedConv]);
 
   useEffect(() => {
     if (initialMatch) {
@@ -129,12 +157,33 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
   const loadMatches = async () => {
     const supabase = createClient();
 
+    let removedIds = new Set<string>();
+    try {
+      const removedRes = await fetch("/api/matches/removed", {
+        credentials: "include",
+      });
+      const removedBody = (await removedRes.json().catch(() => ({}))) as {
+        removed?: Array<{ otherId: string }>;
+      };
+      if (removedRes.ok) {
+        removedIds = new Set(
+          (removedBody.removed ?? []).map((entry) => entry.otherId)
+        );
+      }
+    } catch {
+      /* non-blocking */
+    }
+
     const { data: matchesData } = await supabase
       .from("matches")
       .select("*")
       .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
 
-    const rows = matchesData || [];
+    const rows = (matchesData || []).filter((row) => {
+      const otherId =
+        row.user1_id === userId ? row.user2_id : row.user1_id;
+      return !removedIds.has(otherId);
+    });
     const byPair = new Map<string, typeof rows>();
     for (const row of rows) {
       const key = pairKey(row.user1_id, row.user2_id);

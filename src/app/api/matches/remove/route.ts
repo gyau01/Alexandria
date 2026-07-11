@@ -1,12 +1,13 @@
 import { createClient as createServerClient } from "../../../../../supabase/server";
 import { NextResponse } from "next/server";
 import {
+  deleteConversationForPair,
   getAdminClient,
   recordMutualRemoval,
 } from "@/lib/removed-matches";
 
-// Removes a study buddy from BOTH users' match tabs. Stored in Supabase so
-// every deployment works without per-user Upstash credentials.
+// Removes a study buddy from BOTH users' match and chat tabs, and permanently
+// deletes their DM history in Supabase.
 export async function POST(req: Request) {
   let otherUserId: string | undefined;
   try {
@@ -42,10 +43,22 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = await recordMutualRemoval(admin, user.id, otherUserId);
-  if (!result.ok) {
-    return NextResponse.json({ error: result.message }, { status: 500 });
+  const removal = await recordMutualRemoval(admin, user.id, otherUserId);
+  if (!removal.ok) {
+    return NextResponse.json({ error: removal.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  const deleted = await deleteConversationForPair(
+    admin,
+    user.id,
+    otherUserId
+  );
+  if (!deleted.ok) {
+    return NextResponse.json({ error: deleted.message }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    deletedMessages: deleted.deletedMessages,
+  });
 }
