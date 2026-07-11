@@ -104,12 +104,27 @@ export async function POST(req: Request) {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!supabaseUrl || !serviceKey) {
-    return NextResponse.json(
+	if (!supabaseUrl || !serviceKey) {
+  	return NextResponse.json(
       { error: "Server misconfigured" },
       { status: 500 }
     );
   }
+
+
+	const supabase = await createClient();
+
+	const {data,error} = await supabase.from("users").select("subscription")
+		.eq("user_id", user.id)
+		.single();
+
+		if ( error || !data ) {
+			return NextResponse.json({error:"couldn't verify the sub"},{status: 400});
+		}
+	const allowed = [3,5,9,7,11,13,15];
+	if ( !allowed.includes(data.subscription) ){
+		return NextResponse.json({error: "not subbed"}, { status: 400 });
+	} 
 
   let name: string | undefined;
   let memberIds: string[] = [];
