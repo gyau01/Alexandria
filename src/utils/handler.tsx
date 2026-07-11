@@ -34,7 +34,24 @@ export default async function CheckSub({ option }: { option: number }) {
 				)
 			}
 			else{
-				return <NoSub/>
+				const { data } = await supabase.from("user_usage")
+					.select("polls_usage")
+					.eq("user_id", user.id)
+					.single();
+
+					let check = data.polls_usage
+
+					if ( check != 0 ) {
+						check -= 1;
+
+						await supabase.from("user_usage").update({polls_usage: check })
+							.eq("user_id",user.id).single();
+
+						return (<PollsView userId={user.id}/>)
+					}
+					else{
+						return (<NoSub/>)
+					}
 			}
 		case 3:
 			if( flag ===1 ) {
@@ -43,8 +60,18 @@ export default async function CheckSub({ option }: { option: number }) {
 				)
 			}
 			else {
-				//gate shit
-				return <NoSub/>
+				const { data } = await supabase.from("user_usage")
+					.select("board_usage").eq("user_id", user.id).single();
+
+					let check = data.board_usage;
+					if ( check !=0 ) {
+						check-=1;
+						await supabase.from("board_usage").update({board_usage: check })
+							.eq("user_id",user.id).single();
+					}
+					else {
+						return <NoSub/>
+					}
 			}
 						
 		default: 
