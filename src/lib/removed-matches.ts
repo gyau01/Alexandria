@@ -27,6 +27,101 @@ export async function getRemovedOtherUserIds(
   return (data ?? []).map((row) => row.other_user_id);
 }
 
+function chatImageStoragePath(imageUrl: string | null | undefined): string | null {
+  if (!imageUrl) return null;
+  const marker = "/chat-images/";
+  const idx = imageUrl.indexOf(marker);
+  if (idx === -1) return null;
+  return imageUrl.slice(idx + marker.length).split("?")[0] || null;
+}
+
+/** Permanently deletes all DM messages (and chat images) between two users. */
+export async function deleteConversationForPair(
+  admin: ReturnType<typeof createSupabaseAdmin>,
+  userId: string,
+  otherUserId: string
+): Promise<{ ok: true; deletedMessages: number } | { ok: false; message: string }> {
+  const { data: matchRows, error: matchError } = await admin
+    .from("matches")
+    .select("id, user1_id, user2_id")
+    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+
+  if (matchError) {
+    console.error("deleteConversationForPair matches:", matchError);
+    return {
+      ok: false,
+      message: matchError.message || "Failed to find match conversation",
+    };
+  }
+
+  const matchIds = (matchRows ?? [])
+    .filter(
+      (m) =>
+        (m.user1_id === userId && m.user2_id === otherUserId) ||
+        (m.user1_id === otherUserId && m.user2_id === userId)
+    )
+    .map((m) => m.id);
+
+  if (matchIds.length === 0) return { ok: true, deletedMessages: 0 };
+
+  const imagePaths: string[] = [];
+  const pageSize = 1000;
+  let offset = 0;
+
+  while (true) {
+    const { data: batch, error: selectError } = await admin
+      .from("messages")
+      .select("image_url")
+      .in("match_id", matchIds)
+      .not("image_url", "is", null)
+      .range(offset, offset + pageSize - 1);
+
+    if (selectError) {
+      console.error("deleteConversationForPair messages select:", selectError);
+      return {
+        ok: false,
+        message: selectError.message || "Failed to load messages",
+      };
+    }
+
+    if (!batch?.length) break;
+
+    for (const row of batch) {
+      const path = chatImageStoragePath(row.image_url);
+      if (path) imagePaths.push(path);
+    }
+
+    if (batch.length < pageSize) break;
+    offset += pageSize;
+  }
+
+  const uniqueImagePaths = Array.from(new Set(imagePaths));
+  if (uniqueImagePaths.length > 0) {
+    const { error: storageError } = await admin.storage
+      .from("chat-images")
+      .remove(uniqueImagePaths);
+    if (storageError) {
+      console.error("deleteConversationForPair storage:", storageError);
+    }
+  }
+
+  const { data: deletedRows, error: deleteError } = await admin
+    .from("messages")
+    .delete()
+    .in("match_id", matchIds)
+    .select("id");
+
+  if (deleteError) {
+    console.error("deleteConversationForPair messages delete:", deleteError);
+    return {
+      ok: false,
+      message: deleteError.message || "Failed to delete messages",
+    };
+  }
+
+  return { ok: true, deletedMessages: deletedRows?.length ?? 0 };
+}
+
 /** Records a mutual removal for both users. */
 export async function recordMutualRemoval(
   admin: ReturnType<typeof createSupabaseAdmin>,

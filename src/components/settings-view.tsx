@@ -340,6 +340,9 @@ export default function SettingsView({ userId }: SettingsViewProps) {
         return;
       }
       setBlocked((prev) => prev.filter((b) => b.otherId !== entry.otherId));
+      window.dispatchEvent(
+        new CustomEvent("match-restored", { detail: { otherUserId: entry.otherId } })
+      );
     } finally {
       setRestoringId(null);
     }
@@ -607,7 +610,7 @@ export default function SettingsView({ userId }: SettingsViewProps) {
                   <CardTitle>Blocked / removed users</CardTitle>
                   <CardDescription>
                     People you removed from matches. Unblocking restores the
-                    match for both of you.
+                    match for both of you. Chat history is not restored.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

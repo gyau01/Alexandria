@@ -73,7 +73,7 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
     const name = match.otherUser?.full_name || "this study buddy";
     if (
       !window.confirm(
-        `Remove ${name} from your matches? This removes the match for both of you.`
+        `Remove ${name} from your matches? This removes the match and chat for both of you and permanently deletes all messages.`
       )
     ) {
       return;
@@ -92,6 +92,9 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
         return;
       }
       setMatches((prev) => prev.filter((m) => m.id !== match.id));
+      window.dispatchEvent(
+        new CustomEvent("match-removed", { detail: { otherUserId: match.otherId } })
+      );
     } catch (e) {
       alert(e instanceof Error ? e.message : "Failed to remove match");
     } finally {
