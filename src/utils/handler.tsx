@@ -33,19 +33,8 @@ export default async function CheckSub({ option }: { option: number }) {
 					<PollsView userId={user.id}/>
 				)
 			}
-			else {
-				const { data } = await supabase.from('polls_usage').select('uses_left', 'reset_at').eq('id',user.id).single();
-				const count = data.uses_left;
-				if ( count !== 0 ){
-					count -= 1;
-					await supabase.from('polls_usage').update({uses_left: count}).eq('id',user.id).single();
-					
-					return (<PollsView userID={user.id}/>)
-				}
-				else{
-					return <NoSub/>
-				}
-
+			else{
+				return <NoSub/>
 			}
 		case 3:
 			if( flag ===1 ) {
