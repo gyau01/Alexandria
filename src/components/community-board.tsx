@@ -129,21 +129,14 @@ export default function CommunityBoard({ userId }: CommunityBoardProps) {
       updated_at: new Date().toISOString(),
     };
 
-    let error;
-    if (composer.id) {
-      ({ error } = await supabase
-        .from("community_posts")
-        .update(payload)
-        .eq("id", composer.id));
-    } else {
-      ({ error } = await supabase.from("community_posts").insert(payload));
-    }
-
-    if (error) {
-      console.error("Error saving post:", error);
-      alert("Failed to save: " + error.message);
-      return;
-    }
+		const res = await fetch("/api/discusssion", {
+			method: "POST",
+	 		credentials: "include",
+	 		headers: {"Content-Type": "application/json" },
+	 		body: JSON.stringify({
+	   		user_id: userId,
+	   	}),
+		});
 
     setComposer(EMPTY_COMPOSER);
     setCreating(false);
