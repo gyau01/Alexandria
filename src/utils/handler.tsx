@@ -10,7 +10,7 @@ export default async function CheckSub({ option }: { option: number }) {
 	const { data: { user } } = await supabase.auth.getUser();
 
 	if ( !user ) {
-		return redirect("/sign-in");
+		redirect("/sign-in");
 	}
 
 	const { data: active, error } = await supabase.from("users").select("subscription").eq("user_id", user.id).single();
@@ -34,10 +34,14 @@ export default async function CheckSub({ option }: { option: number }) {
 				)
 			}
 			else{
-				const { data } = await supabase.from("user_usage")
+				const { data, error } = await supabase.from("user_usage")
 					.select("polls_usage")
 					.eq("user_id", user.id)
 					.single();
+					
+					if (error || !data ) {
+						
+					}
 
 					let check = data.polls_usage
 
@@ -62,6 +66,10 @@ export default async function CheckSub({ option }: { option: number }) {
 			else {
 				const { data } = await supabase.from("user_usage")
 					.select("board_usage").eq("user_id", user.id).single();
+					
+					if ( !data ) {
+						redirect("/dashboard");
+					}
 
 					let check = data.board_usage;
 					if ( check !=0 ) {
