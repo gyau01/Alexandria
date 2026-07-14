@@ -120,24 +120,20 @@ export default function CommunityBoard({ userId }: CommunityBoardProps) {
       return;
     }
 
-    const supabase = createClient();
-    const payload = {
-      user_id: userId,
-      title,
-      content: composer.content,
-      status,
-      updated_at: new Date().toISOString(),
-    };
-
 		const res = await fetch("/api/discusssion", {
 			method: "POST",
 	 		credentials: "include",
 	 		headers: {"Content-Type": "application/json" },
 	 		body: JSON.stringify({
-	   		user_id: userId,
-	   	}),
-		});
+	   		id: composer.id, title, content: composer.content, status }),
+	   	});
 
+		const body = await res.json().catch(() => ({}));
+		if ( !res.ok ) {
+			alert("are you subbed?")
+			return (<p> please subscribe! </p>);
+		}
+		
     setComposer(EMPTY_COMPOSER);
     setCreating(false);
     await loadBoard();

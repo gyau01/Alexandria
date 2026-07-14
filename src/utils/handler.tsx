@@ -26,6 +26,18 @@ export default async function CheckSub({ option }: { option: number }) {
 		flag = 1;
 	}
 
+	const { data , err } = await supabase.from("user_usage").select("last_modified")
+		.eq("user_id", user.id).single();
+		if ( !data ) {
+			const { data, error } = await supabase.from("user_usage").insert({user_id: user.id}).select().single();
+			if ( error || !data ) {
+				console.log("hi whats up, im showing up because somethiung went wrong");
+				console.log(error.message);
+				return (<p> error within creating new row man </p>)
+			}
+		}
+
+
 	switch( option ) {
 		case 2:
 			if( flag === 1 ) {
@@ -34,11 +46,13 @@ export default async function CheckSub({ option }: { option: number }) {
 				)
 			}
 			else{
-				const { data } = await supabase.from("user_usage")
+				const { data, error } = await supabase.from("user_usage")
 					.select("polls_usage")
 					.eq("user_id", user.id)
 					.single();
-
+					if ( error || !data ) {
+						return (<p> err with the fucking data </p>)
+					}
 					let check = data.polls_usage
 
 					if ( check != 0 ) {
@@ -60,14 +74,16 @@ export default async function CheckSub({ option }: { option: number }) {
 				)
 			}
 			else {
-				const { data } = await supabase.from("user_usage")
-					.select("board_usage").eq("user_id", user.id).single();
-
+				const { data, error } = await supabase.from("user_usage").select("board_usage").eq("user_id", user.id).single();
+					if ( error || !data ) {
+						return ( <p> err with the table </p> ) 
+					}
 					let check = data.board_usage;
 					if ( check !=0 ) {
 						check-=1;
-						await supabase.from("board_usage").update({board_usage: check })
+						await supabase.from("user_usage").update({board_usage: check })
 							.eq("user_id",user.id).single();
+							return (<CommunityBoard userId={user.id}/>)
 					}
 					else {
 						return <NoSub/>
