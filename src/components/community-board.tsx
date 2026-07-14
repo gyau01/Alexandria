@@ -120,7 +120,7 @@ export default function CommunityBoard({ userId }: CommunityBoardProps) {
       return;
     }
 
-		const res = await fetch("/api/discusssion", {
+		const res = await fetch("/api/discussion", {
 			method: "POST",
 	 		credentials: "include",
 	 		headers: {"Content-Type": "application/json" },
@@ -130,8 +130,8 @@ export default function CommunityBoard({ userId }: CommunityBoardProps) {
 
 		const body = await res.json().catch(() => ({}));
 		if ( !res.ok ) {
-			alert("are you subbed?")
-			return (<p> please subscribe! </p>);
+			alert("are you subbed?");
+			return;
 		}
 		
     setComposer(EMPTY_COMPOSER);
