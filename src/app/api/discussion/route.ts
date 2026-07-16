@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   }
 
   const sub_id = subData.subscription;
-  const bit = 1 << 2;
+  const bit = 1 << 3;
   if ((sub_id & bit) === 0) {
     return NextResponse.json(
       { ok: false, error: "You need an active subscription to post to the community board." },
