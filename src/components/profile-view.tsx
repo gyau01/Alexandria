@@ -10,6 +10,7 @@ import { createClient } from "../../supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
@@ -194,7 +195,9 @@ export default function ProfileView({ userId }: ProfileViewProps) {
   const handleEditProfile = () => {
     setEditedProfile({
       major: profile?.major || "",
-      year_of_study: profile?.year_of_study || ""
+      year_of_study: profile?.year_of_study || "",
+      gpa: profile?.gpa != null ? String(profile.gpa) : "",
+      bio: profile?.bio || "",
     });
     setEditingProfile(true);
   };
@@ -208,11 +211,23 @@ export default function ProfileView({ userId }: ProfileViewProps) {
         return;
       }
 
+      let gpa: number | null = null;
+      if (editedProfile.gpa?.trim()) {
+        const parsed = parseFloat(editedProfile.gpa);
+        if (Number.isNaN(parsed) || parsed < 0 || parsed > 4) {
+          alert("GPA must be a number between 0 and 4.");
+          return;
+        }
+        gpa = parsed;
+      }
+
       const { error } = await supabase
         .from("student_profiles")
         .update({
           major: editedProfile.major,
           year_of_study: editedProfile.year_of_study,
+          gpa,
+          bio: editedProfile.bio?.trim() || null,
           updated_at: new Date().toISOString()
         })
         .eq("user_id", userId);
@@ -641,19 +656,19 @@ export default function ProfileView({ userId }: ProfileViewProps) {
               <p className="text-sm text-muted-foreground mb-1">Year of Study</p>
               <p className="font-semibold capitalize">{profile?.year_of_study}</p>
             </div>
-            {profile?.gpa && (
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">GPA</p>
-                <p className="font-semibold">{profile.gpa}</p>
-              </div>
-            )}
-          </div>
-          {profile?.bio && (
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground mb-2">Bio</p>
-              <p className="text-foreground">{profile.bio}</p>
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">GPA</p>
+              <p className="font-semibold">
+                {profile?.gpa != null ? profile.gpa : "Not set"}
+              </p>
             </div>
-          )}
+          </div>
+          <div className="pt-4 border-t">
+            <p className="text-sm text-muted-foreground mb-2">Bio</p>
+            <p className="text-foreground whitespace-pre-wrap">
+              {profile?.bio?.trim() || "No bio added yet."}
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -663,7 +678,7 @@ export default function ProfileView({ userId }: ProfileViewProps) {
           <DialogHeader>
             <DialogTitle>Edit Academic Profile</DialogTitle>
             <DialogDescription>
-              Update your major and year of study information
+              Update your academic information, GPA, and bio
             </DialogDescription>
           </DialogHeader>
 
@@ -680,8 +695,8 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                   emptyMessage="No major found."
                 />
               ) : (
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-800">Loading majors... Please wait.</p>
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">Loading majors... Please wait.</p>
                 </div>
               )}
             </div>
@@ -703,6 +718,35 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                   <SelectItem value="Graduate">Graduate</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="gpa" className="text-base mb-3 block">GPA (Optional)</Label>
+              <Input
+                id="gpa"
+                type="number"
+                step="0.01"
+                min="0"
+                max="4"
+                placeholder="3.5"
+                value={editedProfile?.gpa ?? ""}
+                onChange={(e) =>
+                  setEditedProfile({ ...editedProfile, gpa: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="bio" className="text-base mb-3 block">Bio</Label>
+              <Textarea
+                id="bio"
+                placeholder="Tell study partners about yourself and your study goals..."
+                rows={4}
+                value={editedProfile?.bio ?? ""}
+                onChange={(e) =>
+                  setEditedProfile({ ...editedProfile, bio: e.target.value })
+                }
+              />
             </div>
           </div>
 
@@ -1032,8 +1076,8 @@ export default function ProfileView({ userId }: ProfileViewProps) {
                             emptyMessage="No class found."
                           />
                         ) : (
-                          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <p className="text-sm text-yellow-800">
+                          <div className="p-3 bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                            <p className="text-sm text-yellow-800 dark:text-yellow-200">
                               Loading classes... Please wait.
                             </p>
                           </div>
