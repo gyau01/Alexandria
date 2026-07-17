@@ -15,7 +15,7 @@ interface DashboardContentProps {
   userId: string;
 }
 
-export default function DashboardContent({ userId, polls,board }: { userId: string; polls: React.ReactNode; board: React.ReactNode; }) {
+export default function DashboardContent({ userId }: { userId: string;}) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabParam = searchParams.get("tab");
@@ -71,7 +71,7 @@ export default function DashboardContent({ userId, polls,board }: { userId: stri
         </TabsContent>
 
         <TabsContent value="polls">
-					{polls}
+					<PollsView userId={userId}>
         </TabsContent>
 
         <TabsContent value="board">
