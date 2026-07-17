@@ -32,9 +32,9 @@ export default function CommunityPage() {
           <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
             <p>
               Many students end up studying alone, feeling anxious, falling behind, and worrying about failing. 
-              Research shows that <span className="font-semibold text-blue-600">collaborative studying can boost GPA by up to 25%</span> (QuadC, 2023). 
+              Research shows that <span className="font-semibold text-blue-600 dark:text-blue-400">collaborative studying can boost GPA by up to 25%</span> (QuadC, 2023). 
               This success is further supported by meta-analyses indicating that students in traditional, 
-              non-collaborative lecture courses are <span className="font-semibold text-blue-600">1.5 times more likely to fail</span> than those in 
+              non-collaborative lecture courses are <span className="font-semibold text-blue-600 dark:text-blue-400">1.5 times more likely to fail</span> than those in 
               active, collaborative learning environments (Freeman et al., 2014).
             </p>
             
@@ -42,8 +42,8 @@ export default function CommunityPage() {
               But without the right tools, that kind of support just isn't accessible to most students.
             </p>
             
-            <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-lg mt-8">
-              <p className="text-gray-800 italic">
+            <div className="bg-blue-50 dark:bg-blue-950 border-l-4 border-blue-600 dark:border-blue-400 p-6 rounded-r-lg mt-8">
+              <p className="text-gray-800 dark:text-gray-100 italic">
                 "Cramly started with a simple frustration. It's surprisingly hard to find someone to study with 
                 for homework, quizzes, and exams, in order to reach the highest potential. Even though students 
                 surround lectures, there's often no easy way to connect with people who share the same goals, 
@@ -55,7 +55,7 @@ export default function CommunityPage() {
       </section>
 
       {/* The Solution Section */}
-      <section className="py-20 px-4 bg-gradient-to-b from-white via-blue-50 to-white">
+      <section className="py-20 px-4 bg-gradient-to-b from-white via-blue-50 to-white dark:bg-none dark:bg-background">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
@@ -63,9 +63,10 @@ export default function CommunityPage() {
             </h2>
           </div>
           
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-8 md:p-12 border-2 border-blue-200 shadow-xl">
-            <p className="text-xl text-gray-800 leading-relaxed mb-6">
-              <span className="font-bold text-blue-600">Cramly</span> is a web and mobile application platform that helps students 
+          <div className="rounded-2xl p-8 md:p-12 border-2 border-blue-200 dark:border-blue-700 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:bg-none dark:bg-blue-950">
+            <p className="text-xl text-gray-800 dark:text-gray-100 leading-relaxed">
+              <span className="font-bold text-blue-700 dark:text-blue-300">Cramly</span>{" "}
+              is a web and mobile application platform that helps students 
               form effective study partnerships or small groups that break the barriers based on shared academic 
               characteristics such as courses, majors, availability, study location, and study preferences.
             </p>
@@ -132,7 +133,7 @@ export default function CommunityPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all">
+            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-lg transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <MessageSquare className="h-6 w-6 text-white" />
@@ -144,7 +145,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all">
+            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-lg transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Calendar className="h-6 w-6 text-white" />
@@ -156,7 +157,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all">
+            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-lg transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Users className="h-6 w-6 text-white" />
@@ -168,7 +169,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all">
+            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-lg transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <BookOpen className="h-6 w-6 text-white" />
@@ -180,7 +181,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all">
+            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-lg transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Target className="h-6 w-6 text-white" />
@@ -192,7 +193,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all">
+            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-lg transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <TrendingUp className="h-6 w-6 text-white" />
@@ -204,7 +205,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all">
+            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-lg transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <CheckCircle className="h-6 w-6 text-white" />
@@ -216,7 +217,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all">
+            <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/40 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-lg transition-all">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Users className="h-6 w-6 text-white" />

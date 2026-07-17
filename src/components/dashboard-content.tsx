@@ -71,8 +71,9 @@ export default function DashboardContent({ userId }: { userId: string;}) {
         </TabsContent>
 
         <TabsContent value="polls">
+
 					<PollsView userId={userId}/>
-        </TabsContent>
+
 
         <TabsContent value="board">
 					<CommunityBoard userId={userId}/>
