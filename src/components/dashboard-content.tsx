@@ -75,7 +75,7 @@ export default function DashboardContent({ userId, polls,board }: { userId: stri
         </TabsContent>
 
         <TabsContent value="board">
-					{board}
+					<CommunityBoard userId={userId}/>
         </TabsContent>
 
         <TabsContent value="profile">
