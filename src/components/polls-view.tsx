@@ -81,77 +81,78 @@ export default function PollsView({ userId }: PollsViewProps) {
     });
   };
 
-  const handleCreatePoll = async () => {
-    setFormError(null);
+	const handleCreatePoll = async () => {
+  	setFormError(null);
 
-    // Validate title
-    const trimmedTitle = newPoll.title.trim();
-    if (!trimmedTitle) {
-      setFormError("Please provide a poll title.");
-      return;
-    }
+  // Validate title
+  	const trimmedTitle = newPoll.title.trim();
+  	if (!trimmedTitle) {
+    	setFormError("Please provide a poll title.");
+    	return;
+  	}
 
-    // Validate options - filter out empty strings and check count
-    const validOptions = newPoll.options.filter(opt => opt.trim().length > 0);
-    if (validOptions.length < 2) {
-      setFormError("Please add at least 2 options.");
-      return;
-    }
+  // Validate options - filter out empty strings, trim, and dedupe
+  	const validOptions = Array.from(
+    	new Set(
+      	newPoll.options
+      	  .map(opt => opt.trim())
+    	    .filter(opt => opt.length > 0)
+   	 )
+  	);
+  	if (validOptions.length < 2) {
+    	setFormError("Please add at least 2 unique options.");
+    	return;
+  	}
 
-    setSubmitting(true);
-    try {
-      const supabase = createClient();
+  	setSubmitting(true);
+  	try {
+    	const res = await fetch("/api/polls/create", {
+      	method: "POST",
+      	credentials: "include",
+      	headers: { "Content-Type": "application/json" },
+      	body: JSON.stringify({
+        	created_by: userId,
+        	title: trimmedTitle,
+        	description: newPoll.description.trim() || null,
+        	poll_type: newPoll.poll_type,
+        	options: validOptions,
+        // Let the server initialize vote counts if possible —
+        // trusting client-sent counts is a soft spot otherwise.
+      	}),
+    	});
 
-      // Create poll
-      const { data: pollData, error: pollError } = await supabase
-        .from("polls")
-        .insert({
-          user_id: userId,
-          title: trimmedTitle,
-          description: newPoll.description.trim() || null,
-          poll_type: newPoll.poll_type,
-          options: validOptions,
-          votes: validOptions.reduce((acc, option) => {
-            acc[option] = 0;
-            return acc;
-          }, {} as Record<string, number>)
-        })
-        .select()
-        .single();
+    	const body = await res.json().catch(() => ({}));
 
-      if (pollError) {
-        console.error("Error creating poll:", pollError);
-        setFormError(
-          `Failed to create poll: ${pollError.message}` +
-            (pollError.code ? ` (code ${pollError.code})` : "")
-        );
-        return;
-      }
+    	if (!res.ok) {
+      	const message =
+        	body?.error || body?.message || `Request failed (${res.status})`;
+      	setFormError(`Failed to create poll: ${message}`);
+      	return;
+    	}
 
-      console.log("Poll created successfully:", pollData);
+    	console.log("Poll created successfully:", body);
 
-      // Reset form
-      setNewPoll({
-        title: "",
-        description: "",
-        poll_type: "study_time",
-        options: [],
-        newOption: ""
-      });
-      setCreatingPoll(false);
+    // Reset form
+    	setNewPoll({
+      	title: "",
+      	description: "",
+      	poll_type: "study_time",
+      	options: [],
+      	newOption: "",
+    	});
+    	setCreatingPoll(false);
 
-      // Reload polls
-      await loadPolls();
-      setBanner("Poll created successfully!");
-      setTimeout(() => setBanner(null), 4000);
-    } catch (error: any) {
-      console.error("Error creating poll:", error);
-      setFormError(error?.message || "An unexpected error occurred.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
+    	// Reload polls
+    	await loadPolls();
+    	setBanner("Poll created successfully!");
+    	setTimeout(() => setBanner(null), 4000);
+  	} catch (error) {
+    	console.error("Error creating poll:", error);
+    	setFormError(error?.message || "An unexpected error occurred.");
+  	} finally {
+    	setSubmitting(false);
+  	}
+	};
   const handleVote = async (pollId: string, option: string, myVote?: string | null) => {
     // Clicking the option you already picked does nothing.
     if (myVote === option) return;

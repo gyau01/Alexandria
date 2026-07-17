@@ -120,31 +120,20 @@ export default function CommunityBoard({ userId }: CommunityBoardProps) {
       return;
     }
 
-    const supabase = createClient();
-    const payload = {
-      user_id: userId,
-      title,
-      content: composer.content,
-      status,
-      updated_at: new Date().toISOString(),
-    };
+		const res = await fetch("/api/discussion", {
+			method: "POST",
+	 		credentials: "include",
+	 		headers: {"Content-Type": "application/json" },
+	 		body: JSON.stringify({
+	   		id: composer.id, title, content: composer.content, status }),
+	   	});
 
-    let error;
-    if (composer.id) {
-      ({ error } = await supabase
-        .from("community_posts")
-        .update(payload)
-        .eq("id", composer.id));
-    } else {
-      ({ error } = await supabase.from("community_posts").insert(payload));
-    }
-
-    if (error) {
-      console.error("Error saving post:", error);
-      alert("Failed to save: " + error.message);
-      return;
-    }
-
+		const body = await res.json().catch(() => ({}));
+		if ( !res.ok ) {
+			alert("are you subbed?");
+			return;
+		}
+		
     setComposer(EMPTY_COMPOSER);
     setCreating(false);
     await loadBoard();

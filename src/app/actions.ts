@@ -41,7 +41,7 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-up", error.message);
   }
 	if(data.user){
-		const {error :usageError } = await supabase.from('user_usage').insert({id:data.user.id});
+		const {error :usageError } = await supabase.from('user_usage').insert({user_id:data.user.id});
 			if(usageError){
 				console.error("failed to create usage row:",usageError.message);
 			}
