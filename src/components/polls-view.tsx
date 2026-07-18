@@ -99,7 +99,7 @@ export default function PollsView({ userId }: PollsViewProps) {
     	    .filter(opt => opt.length > 0)
    	 )
   	);
-  	if (validOptions.length < 2) {
+  	if (validOptions.length <= 2) {
     	setFormError("Please add at least 2 unique options.");
     	return;
   	}
