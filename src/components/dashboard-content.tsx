@@ -72,6 +72,7 @@ export default function DashboardContent({ userId }: { userId: string;}) {
 
         <TabsContent value="polls">
 
+
 					<PollsView userId={userId}/>
 
 
