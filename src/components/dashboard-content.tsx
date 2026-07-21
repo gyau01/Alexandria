@@ -75,7 +75,7 @@ export default function DashboardContent({ userId }: { userId: string;}) {
         </TabsContent>
 
         <TabsContent value="board">
-					<CommunityBoard userId={userId}/>
+          <CommunityBoard userId={userId} />
         </TabsContent>
 
         <TabsContent value="profile">
