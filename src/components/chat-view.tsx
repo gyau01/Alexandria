@@ -62,6 +62,12 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const shouldScrollRef = useRef(false);
+  const selectedConvRef = useRef(selectedConv);
+  selectedConvRef.current = selectedConv;
+  const matchesRef = useRef(matches);
+  matchesRef.current = matches;
+  const groupsRef = useRef(groups);
+  groupsRef.current = groups;
 
   const formatMessageTime = (createdAt: string) => {
     const msgDate = new Date(createdAt);
@@ -105,6 +111,71 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
+  // Bump sidebar unread dots when a message arrives in a conversation
+  // that isn't currently open.
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`unread-inbox:${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const row = payload.new as {
+            sender_id?: string;
+            match_id?: string | null;
+            group_id?: string | null;
+          };
+          if (!row.sender_id || isOwnMessage(row.sender_id)) return;
+
+          const open = selectedConvRef.current;
+          if (open?.kind === "dm" && row.match_id) {
+            const openMatch =
+              matchesRef.current.find(
+                (m) =>
+                  m.id === open.id ||
+                  m.allMatchIds?.includes(open.id) ||
+                  m.otherId === open.otherId
+              ) ?? open;
+            const ids: string[] = openMatch.allMatchIds?.length
+              ? openMatch.allMatchIds
+              : [openMatch.id];
+            if (ids.includes(row.match_id)) return;
+          }
+          if (open?.kind === "group" && row.group_id === open.id) return;
+
+          if (row.group_id) {
+            const known = groupsRef.current.some((g) => g.id === row.group_id);
+            if (!known) return;
+            setUnreadCounts((prev) => ({
+              ...prev,
+              [row.group_id!]: (prev[row.group_id!] || 0) + 1,
+            }));
+            return;
+          }
+
+          if (row.match_id) {
+            const match = matchesRef.current.find(
+              (m) =>
+                m.id === row.match_id ||
+                m.allMatchIds?.includes(row.match_id)
+            );
+            if (!match) return;
+            setUnreadCounts((prev) => ({
+              ...prev,
+              [match.id]: (prev[match.id] || 0) + 1,
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
   useEffect(() => {
     if (selectedConv?.kind !== "dm") return;
     const stillVisible = matches.some(
@@ -130,6 +201,8 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
       loadMessages(selectedConv);
       if (selectedConv.kind === "dm") {
         markMessagesAsRead(resolveMatchIds(selectedConv));
+      } else if (selectedConv.kind === "group") {
+        markGroupMessagesAsRead(selectedConv.id);
       }
       const cleanup = subscribeToMessages(selectedConv);
       return cleanup;
@@ -148,7 +221,17 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
     try {
       const res = await fetch("/api/groups", { credentials: "include" });
       const body = (await res.json().catch(() => ({}))) as { groups?: any[] };
-      if (res.ok) setGroups(body.groups ?? []);
+      if (res.ok) {
+        const next = body.groups ?? [];
+        setGroups(next);
+        setUnreadCounts((prev) => {
+          const merged = { ...prev };
+          next.forEach((g: any) => {
+            merged[g.id] = g.unreadCount || 0;
+          });
+          return merged;
+        });
+      }
     } catch {
       /* non-blocking */
     }
@@ -238,11 +321,14 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
 
     setMatches(matchDetails);
 
-    const counts: Record<string, number> = {};
-    matchDetails.forEach((match) => {
-      counts[match.id] = match.unreadCount;
+    setUnreadCounts((prev) => {
+      const next = { ...prev };
+      // Clear stale DM keys, then write fresh counts.
+      matchDetails.forEach((match) => {
+        next[match.id] = match.unreadCount;
+      });
+      return next;
     });
-    setUnreadCounts(counts);
 
     setLoading(false);
   };
@@ -290,6 +376,18 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
     setUnreadCounts((prev) => ({ ...prev, [primaryId]: 0 }));
   };
 
+  const markGroupMessagesAsRead = async (groupId: string) => {
+    const supabase = createClient();
+    await supabase
+      .from("messages")
+      .update({ read: true })
+      .eq("group_id", groupId)
+      .neq("sender_id", userId)
+      .eq("read", false);
+
+    setUnreadCounts((prev) => ({ ...prev, [groupId]: 0 }));
+  };
+
   const subscribeToMessages = (conv: any) => {
     const supabase = createClient();
 
@@ -318,8 +416,12 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
         );
       });
 
-      if (conv.kind === "dm" && !isOwnMessage(row.sender_id)) {
-        markMessagesAsRead(resolveMatchIds(conv));
+      if (!isOwnMessage(row.sender_id)) {
+        if (conv.kind === "dm") {
+          markMessagesAsRead(resolveMatchIds(conv));
+        } else if (conv.kind === "group") {
+          markGroupMessagesAsRead(conv.id);
+        }
       }
     };
 
@@ -598,7 +700,7 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
         name: derivedName,
         members: g.members || [],
         lastMessageTime: g.lastMessageTime,
-        unread: 0,
+        unread: unreadCounts[g.id] || 0,
       };
     });
 
@@ -721,6 +823,11 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
                     {conv.kind === "group" ? (
                       <div className="relative shrink-0 h-10 w-10 rounded-full bg-purple-600 text-white flex items-center justify-center">
                         <Users className="h-5 w-5" />
+                        {conv.unread > 0 && (
+                          <div className="absolute -top-1 -right-1 h-4 w-4 bg-blue-600 rounded-full flex items-center justify-center">
+                            <div className="h-2 w-2 bg-white rounded-full" />
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <button

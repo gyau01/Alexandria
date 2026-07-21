@@ -64,18 +64,32 @@ export async function GET() {
     });
   }
 
-  // Last message time per group for sorting.
-  const { data: lastMsgs } = await admin
-    .from("messages")
-    .select("group_id, created_at")
-    .in("group_id", groupIds)
-    .order("created_at", { ascending: false });
+  // Last message time + unread counts per group.
+  const [{ data: lastMsgs }, { data: unreadMsgs }] = await Promise.all([
+    admin
+      .from("messages")
+      .select("group_id, created_at")
+      .in("group_id", groupIds)
+      .order("created_at", { ascending: false }),
+    admin
+      .from("messages")
+      .select("group_id")
+      .in("group_id", groupIds)
+      .eq("read", false)
+      .neq("sender_id", user.id),
+  ]);
 
   const lastTimeByGroup: Record<string, string> = {};
   (lastMsgs ?? []).forEach((m) => {
     if (m.group_id && !lastTimeByGroup[m.group_id]) {
       lastTimeByGroup[m.group_id] = m.created_at;
     }
+  });
+
+  const unreadByGroup: Record<string, number> = {};
+  (unreadMsgs ?? []).forEach((m) => {
+    if (!m.group_id) return;
+    unreadByGroup[m.group_id] = (unreadByGroup[m.group_id] || 0) + 1;
   });
 
   const groups = (groupsRes.data ?? []).map((g) => {
@@ -92,6 +106,7 @@ export async function GET() {
       createdBy: g.created_by,
       members,
       lastMessageTime: lastTimeByGroup[g.id] ?? g.created_at,
+      unreadCount: unreadByGroup[g.id] || 0,
     };
   });
 
@@ -181,8 +196,15 @@ export async function POST(req: Request) {
 
   if (groupErr || !group) {
     console.error("create group:", groupErr);
+    const missingTable =
+      groupErr?.code === "PGRST205" ||
+      /group_chats/i.test(groupErr?.message ?? "");
     return NextResponse.json(
-      { error: "Failed to create group" },
+      {
+        error: missingTable
+          ? "Group chats aren't set up in the database yet. Apply the group_chats migration in Supabase."
+          : groupErr?.message || "Failed to create group",
+      },
       { status: 500 }
     );
   }
