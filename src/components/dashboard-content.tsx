@@ -71,11 +71,11 @@ export default function DashboardContent({ userId, polls,board }: { userId: stri
         </TabsContent>
 
         <TabsContent value="polls">
-					{polls}
+					<PollsView/>
         </TabsContent>
 
         <TabsContent value="board">
-					{board}
+					<CommunityBoard/>
         </TabsContent>
 
         <TabsContent value="profile">
