@@ -114,16 +114,22 @@ export async function POST(req: Request) {
 
 	const supabase = await createServerClient();
 
-	const {data,error} = await supabase.from("users").select("subscription")
+	const { data, error } = await supabase
+		.from("users")
+		.select("subscription")
 		.eq("user_id", user.id)
 		.single();
 
-		if ( error || !data ) {
-			return NextResponse.json({error:"couldn't verify the sub"},{status: 400});
-		}
-	const allowed = [3,5,9,7,11,13,15];
-	if ( !allowed.includes(data.subscription) ){
-		return NextResponse.json({error: "not subbed"}, { status: 400 });
+	if (error || !data) {
+		return NextResponse.json(
+			{ error: "couldn't verify the sub" },
+			{ status: 400 }
+		);
+	}
+	const allowed = [3, 5, 9, 7, 11, 13, 15];
+	const tier = Number(data.subscription) || 0;
+	if (!allowed.includes(tier)) {
+		return NextResponse.json({ error: "not subbed" }, { status: 400 });
 	} 
 
   let name: string | undefined;

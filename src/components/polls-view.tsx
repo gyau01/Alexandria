@@ -148,7 +148,9 @@ export default function PollsView({ userId }: PollsViewProps) {
     	setTimeout(() => setBanner(null), 4000);
   	} catch (error) {
     	console.error("Error creating poll:", error);
-    	setFormError(error?.message || "An unexpected error occurred.");
+    	setFormError(
+    		error instanceof Error ? error.message : "An unexpected error occurred."
+    	);
   	} finally {
     	setSubmitting(false);
   	}

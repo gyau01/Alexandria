@@ -1,17 +1,23 @@
-import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
+import {
+  createClient as createSupabaseAdmin,
+  type SupabaseClient,
+} from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey =
   process.env.SUPABASE_SERVICE_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-export function getAdminClient() {
+/** Loose client type so callers using createClient(url, key) type-check in CI. */
+type AdminClient = SupabaseClient<any, "public", any>;
+
+export function getAdminClient(): AdminClient | null {
   if (!supabaseUrl || !serviceKey) return null;
   return createSupabaseAdmin(supabaseUrl, serviceKey);
 }
 
 /** Returns other user ids the given user has removed from their match list. */
 export async function getRemovedOtherUserIds(
-  admin: ReturnType<typeof createSupabaseAdmin>,
+  admin: AdminClient,
   userId: string
 ): Promise<string[]> {
   const { data, error } = await admin
@@ -37,7 +43,7 @@ function chatImageStoragePath(imageUrl: string | null | undefined): string | nul
 
 /** Permanently deletes all DM messages (and chat images) between two users. */
 export async function deleteConversationForPair(
-  admin: ReturnType<typeof createSupabaseAdmin>,
+  admin: AdminClient,
   userId: string,
   otherUserId: string
 ): Promise<{ ok: true; deletedMessages: number } | { ok: false; message: string }> {
@@ -124,7 +130,7 @@ export async function deleteConversationForPair(
 
 /** Records a mutual removal for both users. */
 export async function recordMutualRemoval(
-  admin: ReturnType<typeof createSupabaseAdmin>,
+  admin: AdminClient,
   userId: string,
   otherUserId: string
 ): Promise<{ ok: true } | { ok: false; message: string }> {
@@ -148,7 +154,7 @@ export async function recordMutualRemoval(
 
 /** Clears a mutual removal for both users. */
 export async function clearMutualRemoval(
-  admin: ReturnType<typeof createSupabaseAdmin>,
+  admin: AdminClient,
   userId: string,
   otherUserId: string
 ): Promise<{ ok: true } | { ok: false; message: string }> {
