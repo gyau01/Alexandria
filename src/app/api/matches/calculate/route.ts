@@ -30,6 +30,44 @@ export async function POST(request: Request) {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+		const { data: subbed, error: subError } = await supabase
+			.from("users")
+			.select("subscription")
+			.eq("user_id", user.id)
+			.single();
+
+		if ( subError || !subbed ) {
+			return NextResponse.json({error: " could not access subscription" },{status: 401});
+		}
+
+		let flag = 0;
+		const sub_id = subbed.subscription ?? 0;
+
+		const BIT = 1 << 1;
+
+		if ((BIT & sub_id) === 0 ) {
+			const { data, error } = await supabase.from("user_usage")
+				. select("max_match")
+				.eq("user_id", user.id)
+				.single();
+
+			if ( error || !data ){
+				return NextResponse.json({error: " error checking usage "}, {status: 401});
+			}
+
+			let check = data.max_match;
+
+			if ( check !== 0 ){
+				check -= 1;
+
+				await supabase.from("user_usage").update({max_match:check}).eq("user_id", user.id).single();
+			}
+			else {
+				return NextResponse.json({error: " out of matches"}, {status: 401});
+			}
+		}
+
     const result = await runMatchCalculation(supabase, userId);
 
     if (!result.ok) {
