@@ -11,9 +11,6 @@ import { createClient } from "../../supabase/client";
 import UserProfileDialog from "./user-profile-dialog";
 import { SCORING } from "@/lib/matchScoring";
 
-import { SCORING, applyScore } from "@/lib/matchScoring";
-
-
 interface MatchesViewProps {
   userId: string;
   onStartChat?: (match: any) => void;
