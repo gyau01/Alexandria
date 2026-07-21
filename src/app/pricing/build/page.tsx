@@ -13,8 +13,8 @@ type Option = {
 const OPTIONS: Option[] = [
   {
     id: 8,
-    name: "Unlimited Chats",
-    description: "As many chats as you want",
+    name: "Group Chats",
+    description: "Create group chats to coordinate",
     amount: 99,
   },
   {
@@ -25,8 +25,8 @@ const OPTIONS: Option[] = [
   },
   {
     id: 2,
-    name: "10 Total Matches",
-    description: "Up to 10 total matches",
+    name: "Unlimited Polls",
+    description: "As many polls as you want",
     amount: 99,
   },
   {
