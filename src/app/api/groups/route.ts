@@ -112,7 +112,7 @@ export async function POST(req: Request) {
   }
 
 
-	const supabase = await createClient();
+	const supabase = await createServerClient();
 
 	const {data,error} = await supabase.from("users").select("subscription")
 		.eq("user_id", user.id)
