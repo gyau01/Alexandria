@@ -1,5 +1,5 @@
 import { TempoInit } from "@/components/tempo-init";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   title: "Alexandria",
   description: "Connect with compatible study partners based on your classes and preferences",
   applicationName: "Alexandria",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

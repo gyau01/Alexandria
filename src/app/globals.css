@@ -63,6 +63,10 @@
   * {
     @apply border-border;
   }
+  /* Scale the whole UI to ~90% browser zoom (Tailwind rem sizes follow this). */
+  html {
+    font-size: 90%;
+  }
   body {
     @apply bg-background text-foreground;
   }

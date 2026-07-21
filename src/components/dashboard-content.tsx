@@ -41,9 +41,9 @@ export default function DashboardContent({ userId }: { userId: string;}) {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-4 md:py-6">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-4 md:mb-6">
           <TabsTrigger value="matches" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Matches

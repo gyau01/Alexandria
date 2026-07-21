@@ -18,9 +18,9 @@ export default async function Navbar() {
           <Image 
             src="/alexandria_logo.png?v=2" 
             alt="Alexandria Logo" 
-            width={360} 
-            height={120}
-            className="h-24 w-auto"
+            width={240} 
+            height={80}
+            className="h-14 w-auto md:h-16"
             priority
           />
         </Link>
