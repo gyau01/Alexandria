@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Users, MessageCircle, BookOpen, GraduationCap, X } from "lucide-react";
 import { createClient } from "../../supabase/client";
+
 import UserProfileDialog from "./user-profile-dialog";
+import { SCORING } from "@/lib/matchScoring";
 
 interface MatchesViewProps {
   userId: string;
@@ -69,7 +71,7 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
     const name = match.otherUser?.full_name || "this study buddy";
     if (
       !window.confirm(
-        `Remove ${name} from your matches? This removes the match for both of you.`
+        `Remove ${name} from your matches? This removes the match and chat for both of you and permanently deletes all messages.`
       )
     ) {
       return;
@@ -88,6 +90,9 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
         return;
       }
       setMatches((prev) => prev.filter((m) => m.id !== match.id));
+      window.dispatchEvent(
+        new CustomEvent("match-removed", { detail: { otherUserId: match.otherId } })
+      );
     } catch (e) {
       alert(e instanceof Error ? e.message : "Failed to remove match");
     } finally {
@@ -184,7 +189,10 @@ export default function MatchesView({ userId, onStartChat }: MatchesViewProps) {
                   </button>
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-                      {Math.min(100, Math.round(match.compatibility_score))}%
+                      {Math.min(
+                        100,
+                        Math.round((match.compatibility_score / SCORING.maxTotal) * 100)
+                      )}%
                     </Badge>
                     <Button
                       variant="ghost"

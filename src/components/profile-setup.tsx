@@ -553,8 +553,8 @@ export default function ProfileSetup() {
                         emptyMessage="No class found."
                       />
                     ) : (
-                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <p className="text-sm text-yellow-800">
+                      <div className="p-3 bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
                           Please add at least one class in the previous step first.
                         </p>
                       </div>

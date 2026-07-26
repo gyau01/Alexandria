@@ -1,20 +1,15 @@
+"use client";
+
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 
 interface ComboboxProps {
   options: Array<{ value: string; label: string }>;
@@ -23,6 +18,83 @@ interface ComboboxProps {
   placeholder?: string;
   searchPlaceholder?: string;
   emptyMessage?: string;
+}
+
+function normalizeText(str: string) {
+  return str.toLowerCase().trim().replace(/\s+/g, " ").replace(/\s*-\s*/g, " - ");
+}
+
+/** Strip to letters+digits only for code comparisons (e.g. "ECE 420" → "ece420"). */
+function alnum(str: string) {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+/**
+ * Score how well an option matches the search. Higher = better.
+ * Returns 0 when it should be hidden.
+ */
+function scoreOption(
+  option: { value: string; label: string },
+  search: string
+): number {
+  const raw = search.trim();
+  if (!raw) return 1;
+
+  const searchLower = raw.toLowerCase();
+  const searchAlnum = alnum(raw);
+  const labelLower = option.label.toLowerCase();
+  const valueLower = option.value.toLowerCase();
+
+  // Class code is usually everything before " - "
+  const dashIdx = labelLower.indexOf(" - ");
+  const codePart =
+    dashIdx >= 0 ? labelLower.slice(0, dashIdx).trim() : labelLower.split(" ")[0] ?? "";
+  const namePart = dashIdx >= 0 ? labelLower.slice(dashIdx + 3).trim() : labelLower;
+  const codeAlnum = alnum(codePart);
+
+  // Parse "ECE 420", "ece420", "420", "ECE"
+  const searchParts = searchLower.match(/^([a-z]+)?\s*(\d+[a-z]*)?$/i);
+  const searchDept = searchParts?.[1]?.toLowerCase() ?? "";
+  const searchNum = searchParts?.[2]?.toLowerCase() ?? "";
+  const codeParts = codePart.match(/^([a-z]+)\s*(\d+[a-z]*)?/i);
+  const codeDept = codeParts?.[1]?.toLowerCase() ?? "";
+  const codeNum = codeParts?.[2]?.toLowerCase() ?? "";
+
+  // Exact code match: "ECE 420" or "ece420"
+  if (codeAlnum && searchAlnum && codeAlnum === searchAlnum) return 100;
+  if (codePart === searchLower) return 100;
+
+  // Code starts with full search (typed "ECE 42" → ECE 420)
+  if (codeAlnum.startsWith(searchAlnum) && searchAlnum.length >= 2) return 90;
+  if (codePart.startsWith(searchLower)) return 88;
+
+  // Dept + number both provided: require both to match (fixes "ECE 420" matching all ECE)
+  if (searchDept && searchNum) {
+    if (codeDept === searchDept && codeNum.startsWith(searchNum)) return 85;
+    if (codeDept === searchDept && codeNum.includes(searchNum)) return 70;
+    // Dept matches but number doesn't — do not match on dept alone
+    if (codeDept === searchDept) return 0;
+  }
+
+  // Only department typed: "ECE" → all ECE courses
+  if (searchDept && !searchNum && /^[a-z]+$/i.test(searchAlnum)) {
+    if (codeDept === searchDept) return 60;
+    if (codeDept.startsWith(searchDept)) return 50;
+  }
+
+  // Only number typed: "420"
+  if (!searchDept && searchNum) {
+    if (codeNum === searchNum) return 80;
+    if (codeNum.startsWith(searchNum)) return 65;
+    if (codeNum.includes(searchNum)) return 40;
+  }
+
+  // Name / full label substring
+  if (namePart.includes(searchLower)) return 35;
+  if (labelLower.includes(searchLower) || valueLower.includes(searchLower)) return 30;
+  if (alnum(labelLower).includes(searchAlnum) && searchAlnum.length >= 3) return 25;
+
+  return 0;
 }
 
 export function Combobox({
@@ -35,158 +107,113 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
   const [popoverWidth, setPopoverWidth] = React.useState<number>(300);
   const [search, setSearch] = React.useState("");
+  const [highlightIndex, setHighlightIndex] = React.useState(0);
 
   React.useEffect(() => {
     if (triggerRef.current && open) {
       setPopoverWidth(triggerRef.current.offsetWidth);
     }
-    // Reset search when popover closes
     if (!open) {
       setSearch("");
+      setHighlightIndex(0);
+    } else {
+      // Focus search after open so typing works immediately
+      requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [open]);
 
-  // Filter options based on search - show all when search is empty
   const filteredOptions = React.useMemo(() => {
-    if (!search || search.trim() === '') {
-      // Show all options when no search - allows scrolling and selecting
-      return options;
-    }
-    
-    // Filter when user types
-    const searchLower = search.toLowerCase().trim();
-    const normalizedSearch = searchLower.replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-    
-    return options.filter(option => {
-      const labelLower = option.label.toLowerCase();
-      const valueLower = option.value.toLowerCase();
-      const combinedText = `${labelLower} ${valueLower}`;
-      const normalizedCombined = combinedText.replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-      
-      // Extract class code from label (format: "ACC 201 - Class Name" or "ECE 420 - Signals")
-      const classCodeMatch = labelLower.match(/^([a-z]+)\s*(\d+)/i);
-      if (classCodeMatch) {
-        const classCodePrefix = classCodeMatch[1].toLowerCase();
-        const classCodeNumber = classCodeMatch[2];
-        const classCodeFull = `${classCodePrefix}${classCodeNumber}`;
-        const classCodeWithSpace = `${classCodePrefix} ${classCodeNumber}`;
-        
-        // Match class code in various formats
-        if (classCodePrefix.includes(searchLower) || searchLower.includes(classCodePrefix)) return true;
-        if (classCodeFull.includes(normalizedSearch) || normalizedSearch.includes(classCodeFull)) return true;
-        if (classCodeWithSpace.toLowerCase().includes(searchLower)) return true;
-        if (classCodeNumber.includes(searchLower)) return true;
-      }
-      
-      // Check if search matches anywhere in the label or value (case-insensitive)
-      if (labelLower.includes(searchLower) || valueLower.includes(searchLower)) return true;
-      
-      // Check normalized matching (without spaces/special chars)
-      if (normalizedCombined.includes(normalizedSearch)) return true;
-      
-      // Check if any word contains the search
-      const words = combinedText.split(/\s+/);
-      if (words.some(word => word.toLowerCase().includes(searchLower))) return true;
-      
-      // Check if search matches any part of any word
-      const allChars = combinedText.replace(/\s+/g, '');
-      if (allChars.includes(searchLower)) return true;
-      
-      return false;
-    });
+    if (!search.trim()) return options;
+
+    return options
+      .map((option) => ({ option, score: scoreOption(option, search) }))
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.option.label.localeCompare(b.option.label);
+      })
+      .map(({ option }) => option);
   }, [options, search]);
 
-  // Find selected option with flexible matching (trim whitespace for comparison)
+  React.useEffect(() => {
+    setHighlightIndex(0);
+  }, [search]);
+
+  React.useEffect(() => {
+    const el = listRef.current?.querySelector<HTMLElement>(
+      `[data-combobox-index="${highlightIndex}"]`
+    );
+    el?.scrollIntoView({ block: "nearest" });
+  }, [highlightIndex]);
+
   const selectedOption = React.useMemo(() => {
     if (!value) return undefined;
-    
-    // Normalize function to handle whitespace and formatting differences
-    const normalize = (str: string) => {
-      return str.toLowerCase().trim().replace(/\s+/g, ' ').replace(/\s*-\s*/g, ' - ');
-    };
-    
-    // Try exact match first
+
     let found = options.find((option) => option.value === value);
-    if (found) {
-      console.log('Combobox: Exact match', { value, found: found.label });
-      return found;
-    }
-    
-    // Try trimmed match (handle whitespace differences)
+    if (found) return found;
+
     found = options.find((option) => option.value.trim() === value.trim());
-    if (found) {
-      console.log('Combobox: Trimmed match', { value, found: found.label });
-      return found;
-    }
-    
-    // Try normalized match (handles class format like "ECE 420 - Signals")
-    const normalizedValue = normalize(value);
-    found = options.find((option) => normalize(option.value) === normalizedValue);
-    if (found) {
-      console.log('Combobox: Normalized match', { value, normalizedValue, found: found.label });
-      return found;
-    }
-    
-    // Try matching by parsing class code and name separately (for class format "CODE - Name")
+    if (found) return found;
+
+    const normalizedValue = normalizeText(value);
+    found = options.find(
+      (option) => normalizeText(option.value) === normalizedValue
+    );
+    if (found) return found;
+
     const valueMatch = value.match(/^(.+?)\s*-\s*(.+)$/);
     if (valueMatch) {
       const valueCode = valueMatch[1].trim();
       const valueName = valueMatch[2].trim();
       found = options.find((option) => {
         const optMatch = option.value.match(/^(.+?)\s*-\s*(.+)$/);
-        if (optMatch) {
-          const optCode = optMatch[1].trim();
-          const optName = optMatch[2].trim();
-          return optCode === valueCode && optName === valueName;
-        }
-        return false;
+        if (!optMatch) return false;
+        return (
+          optMatch[1].trim() === valueCode && optMatch[2].trim() === valueName
+        );
       });
-      if (found) {
-        console.log('Combobox: Parsed match', { value, valueCode, valueName, found: found.label });
-        return found;
-      }
+      if (found) return found;
     }
-    
-    // Last resort: case-insensitive match
-    found = options.find((option) => option.value.toLowerCase().trim() === value.toLowerCase().trim());
-    if (found) {
-      console.log('Combobox: Case-insensitive match', { value, found: found.label });
-    } else {
-      console.warn('Combobox: No match found', { 
-        value, 
-        valueLength: value.length,
-        optionsCount: options.length,
-        sampleOptions: options.slice(0, 3).map(o => o.value)
-      });
-    }
-    
-    return found;
-  }, [options, value]);
-  
-  // Create a map from label to value for quick lookup
-  const labelToValueMap = React.useMemo(() => {
-    const map = new Map<string, string>();
-    options.forEach(option => {
-      map.set(option.label, option.value);
-    });
-    return map;
-  }, [options]);
 
-  const handleSelect = React.useCallback((selectedLabel: string) => {
-    // Find the option by label and get its value
-    const optionValue = labelToValueMap.get(selectedLabel);
-    if (optionValue !== undefined) {
+    return options.find(
+      (option) =>
+        option.value.toLowerCase().trim() === value.toLowerCase().trim()
+    );
+  }, [options, value]);
+
+  const selectOption = React.useCallback(
+    (optionValue: string) => {
       onValueChange(optionValue);
+      setSearch("");
+      setOpen(false);
+    },
+    [onValueChange]
+  );
+
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIndex((i) =>
+        filteredOptions.length === 0
+          ? 0
+          : Math.min(i + 1, filteredOptions.length - 1)
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const option = filteredOptions[highlightIndex];
+      if (option) selectOption(option.value);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
       setOpen(false);
     }
-  }, [onValueChange, labelToValueMap]);
-  
-  const handleItemClick = React.useCallback((optionValue: string, optionLabel: string) => {
-    onValueChange(optionValue);
-    setOpen(false);
-  }, [onValueChange]);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -196,64 +223,88 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between font-normal"
           type="button"
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          <span className="truncate text-left">
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="p-0" 
-        align="start" 
+      <PopoverContent
+        className="p-0 z-[100]"
+        align="start"
         sideOffset={4}
         style={{ width: `${popoverWidth}px`, minWidth: "200px" }}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        onWheel={(e) => e.stopPropagation()}
+        onInteractOutside={(e) => {
+          // Keep open if interacting with the trigger; otherwise allow close
+          if (triggerRef.current?.contains(e.target as Node)) {
+            e.preventDefault();
+          }
+        }}
       >
-        <Command shouldFilter={false} className="flex flex-col">
-          <CommandList className="max-h-[400px] min-h-[200px] overflow-y-auto border-b">
-            <CommandEmpty>{emptyMessage}</CommandEmpty>
-            <CommandGroup>
-              {filteredOptions.map((option) => {
+        <div className="flex flex-col">
+          <div className="border-b p-2">
+            <Input
+              ref={inputRef}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={onSearchKeyDown}
+              placeholder={searchPlaceholder}
+              className="h-9"
+            />
+          </div>
+          <div
+            ref={listRef}
+            className="max-h-[280px] overflow-y-auto overscroll-contain p-1"
+            role="listbox"
+          >
+            {filteredOptions.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                {emptyMessage}
+              </p>
+            ) : (
+              filteredOptions.map((option, index) => {
+                const isSelected = value === option.value;
+                const isHighlighted = index === highlightIndex;
                 return (
-                  <CommandItem
-                    key={option.value}
-                    value={option.label}
-                    className="text-black aria-selected:text-black cursor-pointer pointer-events-auto"
-                    style={{ pointerEvents: 'auto' }}
-                    onSelect={() => {
-                      // Use option.value from closure - this is the most reliable
-                      onValueChange(option.value);
-                      setOpen(false);
-                    }}
-                    onClick={(e) => {
-                      // Backup click handler
+                  <button
+                    key={`${option.value}-${index}`}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    data-combobox-index={index}
+                    className={cn(
+                      "relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm text-left outline-none",
+                      isHighlighted && "bg-accent text-accent-foreground",
+                      !isHighlighted && "hover:bg-accent/70"
+                    )}
+                    onMouseEnter={() => setHighlightIndex(index)}
+                    onPointerDown={(e) => {
+                      // Select on pointer down so Dialog/Popover focus traps can't steal the click
+                      e.preventDefault();
                       e.stopPropagation();
-                      onValueChange(option.value);
-                      setOpen(false);
+                      selectOption(option.value);
                     }}
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
-                        value === option.value ? "opacity-100" : "opacity-0"
+                        "mr-2 h-4 w-4 shrink-0",
+                        isSelected ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <span className="text-black">{option.label}</span>
-                  </CommandItem>
+                    <span className="truncate">{option.label}</span>
+                  </button>
                 );
-              })}
-            </CommandGroup>
-          </CommandList>
-          <div className="border-t flex-shrink-0">
-            <CommandInput 
-              placeholder={searchPlaceholder}
-              value={search}
-              onValueChange={setSearch}
-            />
+              })
+            )}
           </div>
-        </Command>
+        </div>
       </PopoverContent>
     </Popover>
   );
 }
-

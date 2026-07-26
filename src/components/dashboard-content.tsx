@@ -15,7 +15,7 @@ interface DashboardContentProps {
   userId: string;
 }
 
-export default function DashboardContent({ userId, polls,board }: { userId: string; polls: React.ReactNode; board: React.ReactNode; }) {
+export default function DashboardContent({ userId }: { userId: string;}) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabParam = searchParams.get("tab");
@@ -41,9 +41,9 @@ export default function DashboardContent({ userId, polls,board }: { userId: stri
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-4 md:py-6">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-4 md:mb-6">
           <TabsTrigger value="matches" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Matches
@@ -71,11 +71,12 @@ export default function DashboardContent({ userId, polls,board }: { userId: stri
         </TabsContent>
 
         <TabsContent value="polls">
-					<PollsView/>
+
+          <PollsView userId={userId} />
         </TabsContent>
 
         <TabsContent value="board">
-					<CommunityBoard/>
+          <CommunityBoard userId={userId} />
         </TabsContent>
 
         <TabsContent value="profile">

@@ -1,9 +1,11 @@
 import { createClient as createServerClient } from "../../../../../supabase/server";
 import { NextResponse } from "next/server";
-import { getRedis, removedMatchesKey } from "@/lib/redis";
+import {
+  clearMutualRemoval,
+  getAdminClient,
+} from "@/lib/removed-matches";
 
-// Restores a previously removed study buddy by clearing the pair from both
-// users' Redis hashes (mutual, mirrors the remove route).
+// Restores a previously removed study buddy (mutual, mirrors remove).
 export async function POST(req: Request) {
   let otherUserId: string | undefined;
   try {
@@ -25,30 +27,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const redis = getRedis();
-  if (!redis) {
+  const admin = getAdminClient();
+  if (!admin) {
     return NextResponse.json(
       {
         error:
-          "Redis is not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.",
+          "Server misconfigured: set SUPABASE_SERVICE_KEY or SUPABASE_SERVICE_ROLE_KEY",
       },
       { status: 500 }
     );
   }
 
-  const uid = user.id;
-
-  try {
-    await Promise.all([
-      redis.hdel(removedMatchesKey(uid), otherUserId),
-      redis.hdel(removedMatchesKey(otherUserId), uid),
-    ]);
-  } catch (e) {
-    console.error("matches/restore:", e);
-    return NextResponse.json(
-      { error: "Failed to restore match" },
-      { status: 500 }
-    );
+  const result = await clearMutualRemoval(admin, user.id, otherUserId);
+  if (!result.ok) {
+    return NextResponse.json({ error: result.message }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

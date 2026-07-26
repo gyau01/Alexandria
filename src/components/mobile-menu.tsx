@@ -14,14 +14,14 @@ export default function MobileMenu() {
         className="md:hidden flex flex-col gap-1"
         onClick={() => setOpen(!open)}
       >
-        <span className="w-6 h-0.5 bg-black"></span>
-        <span className="w-6 h-0.5 bg-black"></span>
-        <span className="w-6 h-0.5 bg-black"></span>
+        <span className="w-6 h-0.5 bg-foreground"></span>
+        <span className="w-6 h-0.5 bg-foreground"></span>
+        <span className="w-6 h-0.5 bg-foreground"></span>
       </button>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute top-full left-0 w-full bg-white border-t border-gray-200 shadow-md md:hidden">
+        <div className="absolute top-full left-0 w-full bg-background border-t border-border shadow-md md:hidden">
           <div className="flex flex-col p-4 gap-2">
             <Link href="/pricing">
               <Button variant="ghost" className="w-full justify-start">
