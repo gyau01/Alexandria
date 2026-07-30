@@ -18,13 +18,11 @@ export const signUpAction = async (formData: FormData) => {
       "Email and password are required",
     );
   }
-	/*
   const origin =
     (await headers()).get("origin") ??
     process.env.NEXT_PUBLIC_SITE_URL ??
-    "http://localhost:3000";
-`*/
-	const origin = '/dashboard';
+    "https://alexandriastudy.com";
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -66,7 +64,7 @@ export const resendConfirmationAction = async (formData: FormData) => {
   const origin =
     (await headers()).get("origin") ??
     process.env.NEXT_PUBLIC_SITE_URL ??
-    "http://localhost:3000";
+    "https://alexandriastudy.com";
 
   const { error } = await supabase.auth.resend({
     type: "signup",
