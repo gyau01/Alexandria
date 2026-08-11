@@ -18,6 +18,7 @@ export const signUpAction = async (formData: FormData) => {
       "Email and password are required",
     );
   }
+
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "alexandriastudy.com";
 
   const { data, error } = await supabase.auth.signUp({

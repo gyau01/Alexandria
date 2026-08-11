@@ -37,12 +37,28 @@ export async function POST(req: Request) {
   const sub_id = subData.subscription;
   const bit = 1 << 3;
   if ((sub_id & bit) === 0) {
-    return NextResponse.json(
-      { ok: false, error: "You need an active subscription to post to the community board." },
-      { status: 403 }
-    );
-  }
 
+		const {data: disc_usage, error: disc_err } = await supabase
+			.from("user_usage")
+			.select("board_usage")
+			.eq("user_id", user.id)
+			.single();
+
+		if ( disc_err || !disc_usage ) {
+			return NextResponse.json({error: "Error checking usage table"}, {status: 400});
+		}
+		
+		const { usage } = disc_usage;
+
+		if ( usage == 0 ) {
+			return NextResponse.json({error: " You are out of usage cases, please sub for more"}, {status: 403 });
+		}
+		else {
+			let new_usage = usage - 1;
+			await supabase.from("user_usage").update({"board_usage": new_usage}).eq("user_id",user.id).single();
+		}
+  }
+		
   const payload = {
     user_id: user.id,
     title: title.trim(),

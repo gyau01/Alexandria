@@ -57,7 +57,6 @@ const cleanOptions = options
 		.eq("user_id", user.id)
 		.single();
 	
-	console.log(" look at me ", {check, usageError, userId:user.id});
 
 	if (usageError || !check ){
 		console.error("error checking the usage table")
@@ -69,12 +68,29 @@ const cleanOptions = options
 	const bit = 1 << 2;
 
 	if ((sub_id & bit)===0){
-		return NextResponse.json(
-      { ok: false, error: "You need an active subscription to post to the community board." },
-      { status: 403 }
-    );	
+
+		const { data: usage, error: use_err } = await supabase.from("user_usage")
+			.select("polls_usage")
+			.eq("user_id", user.id)
+			.single();
+
+		if ( use_err || !usage ) {
+			return NextResponse.json({error: " Error checking usage table"}, {status: 400});
+		}
+		
+		const { poll_usage } = usage;
+
+		if ( poll_usage == 0 ) {
+			return NextResponse.json({error: " You are out of usage cases, please subscribe for more "}, { status: 401 } );
+		}
+		else {
+			let new_usage = poll_usage - 1;
+
+			await supabase.from("user_usage").update({polls_usage: new_usage}).eq("user_id",user.id).single();
+
+		}
 	}
-	
+		
 	const { data, error: err } = await supabase.from("polls").insert({
 		user_id: user.id,
 		title: cleanTitle,
