@@ -48,13 +48,13 @@ export async function POST(req: Request) {
 			return NextResponse.json({error: "Error checking usage table"}, {status: 400});
 		}
 		
-		const { usage } = disc_usage;
+		const { board_usage } = disc_usage;
 
-		if ( usage == 0 ) {
+		if ( board_usage == 0 ) {
 			return NextResponse.json({error: " You are out of usage cases, please sub for more"}, {status: 403 });
 		}
 		else {
-			let new_usage = usage - 1;
+			let new_usage = board_usage - 1;
 			await supabase.from("user_usage").update({"board_usage": new_usage}).eq("user_id",user.id).single();
 		}
   }
