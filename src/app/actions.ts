@@ -44,6 +44,8 @@ export const signUpAction = async (formData: FormData) => {
 			}
 	}
 
+	await supabase.from('users').update({subscription: 1}).eq('id', data.user.id);
+
 return encodedRedirect(
     "success",
     "/sign-up",

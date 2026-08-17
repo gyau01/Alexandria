@@ -141,9 +141,9 @@ export async function POST(req: Request) {
 			{ status: 400 }
 		);
 	}
-	const allowed = [3, 5, 9, 7, 11, 13, 15];
-	const tier = Number(data.subscription) || 0;
-	if (!allowed.includes(tier)) {
+	const sub_id = data.subscription;
+	const BIT = 0;
+	if ((sub_id & BIT) === 0) {
 		return NextResponse.json({ error: "not subbed" }, { status: 400 });
 	} 
 	*/
