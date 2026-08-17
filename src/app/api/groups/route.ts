@@ -128,7 +128,7 @@ export async function POST(req: Request) {
 
 
 	const supabase = await createServerClient();
-
+	/*
 	const { data, error } = await supabase
 		.from("users")
 		.select("subscription")
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
 	if (!allowed.includes(tier)) {
 		return NextResponse.json({ error: "not subbed" }, { status: 400 });
 	} 
-
+	*/
   let name: string | undefined;
   let memberIds: string[] = [];
   try {
