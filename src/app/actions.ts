@@ -37,16 +37,17 @@ export const signUpAction = async (formData: FormData) => {
   if (error) {
     return encodedRedirect("error", "/sign-up", error.message);
   }
-	if(data.user){
-		const {error :usageError } = await supabase.from('user_usage').insert({user_id:data.user.id});
-			if(usageError){
-				console.error("failed to create usage row:",usageError.message);
-			}
-	}
 
-	await supabase.from('users').update({subscription: 1}).eq('id', data.user.id);
+  if (data.user) {
+    const { error: usageError } = await supabase.from('user_usage').insert({ user_id: data.user.id });
+    if (usageError) {
+      console.error("failed to create usage row:", usageError.message);
+    }
 
-return encodedRedirect(
+    await supabase.from('users').update({ subscription: 1 }).eq('id', data.user.id);
+  }
+
+  return encodedRedirect(
     "success",
     "/sign-up",
     "Thanks for signing up! Please check your email for a verification link.",
@@ -139,7 +140,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   const confirmPassword = formData.get("confirmPassword") as string;
 
   if (!password || !confirmPassword) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/protected/reset-password",
       "Password and confirm password are required",
@@ -147,7 +148,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   }
 
   if (password !== confirmPassword) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/dashboard/reset-password",
       "Passwords do not match",
@@ -159,14 +160,14 @@ export const resetPasswordAction = async (formData: FormData) => {
   });
 
   if (error) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/dashboard/reset-password",
       "Password update failed",
     );
   }
 
-  encodedRedirect("success", "/protected/reset-password", "Password updated");
+  return encodedRedirect("success", "/protected/reset-password", "Password updated");
 };
 
 export const signOutAction = async () => {
