@@ -52,7 +52,7 @@ export default function PricingCard({ item, user }: { item: any, user: User | nu
                 badge: 'STARTER',
                 badgeColor: 'bg-blue-600/20 text-blue-300 border-blue-400/30',
                 title: 'Free',
-                description: 'Perfect for exploring what Cramlyg can do',
+                description: 'Perfect for exploring what Alexandria can do',
                 features: [
                     'Basic study preferences',
                     'Find study partners',

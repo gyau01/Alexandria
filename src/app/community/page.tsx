@@ -44,7 +44,7 @@ export default function CommunityPage() {
             
             <div className="bg-blue-50 dark:bg-blue-950 border-l-4 border-blue-600 dark:border-blue-400 p-6 rounded-r-lg mt-8">
               <p className="text-gray-800 dark:text-gray-100 italic">
-                "Cramly started with a simple frustration. It's surprisingly hard to find someone to study with 
+                "Alexandria started with a simple frustration. It's surprisingly hard to find someone to study with 
                 for homework, quizzes, and exams, in order to reach the highest potential. Even though students 
                 surround lectures, there's often no easy way to connect with people who share the same goals, 
                 schedules, or study habits, especially in general education courses."
@@ -65,7 +65,7 @@ export default function CommunityPage() {
           
           <div className="rounded-2xl p-8 md:p-12 border-2 border-blue-200 dark:border-blue-700 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:bg-none dark:bg-blue-950">
             <p className="text-xl text-gray-800 dark:text-gray-100 leading-relaxed">
-              <span className="font-bold text-blue-700 dark:text-blue-300">Cramly</span>{" "}
+              <span className="font-bold text-blue-700 dark:text-blue-300">Alexandria</span>{" "}
               is a web and mobile application platform that helps students 
               form effective study partnerships or small groups that break the barriers based on shared academic 
               characteristics such as courses, majors, availability, study location, and study preferences.
@@ -103,7 +103,7 @@ export default function CommunityPage() {
               </div>
               <h3 className="text-2xl font-bold mb-4">2. Smart Matching</h3>
               <p className="text-blue-100 leading-relaxed">
-                Cramly leverages smart clustering and proven compatibility metrics to ensure every group is a perfect match.
+                Alexandria leverages smart clustering and proven compatibility metrics to ensure every group is a perfect match.
               </p>
             </div>
 

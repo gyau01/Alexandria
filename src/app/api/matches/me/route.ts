@@ -66,7 +66,6 @@ export async function GET() {
     (a, b) => (b.compatibility_score ?? 0) - (a.compatibility_score ?? 0)
   );
 
-  // Filter out matches the user has removed (stored in Supabase).
   let removedIds: string[] = [];
   try {
     removedIds = await getRemovedOtherUserIds(admin, uid);
@@ -79,33 +78,78 @@ export async function GET() {
     return !removedIds.includes(otherId);
   });
 
-  const matchDetails = await Promise.all(
-    visibleMatches.map(async (match) => {
-      const otherId =
-        match.user1_id === uid ? match.user2_id : match.user1_id;
-      const [otherUserRes, profileRes, classesRes] = await Promise.all([
-        admin.from("users").select("full_name, email").eq("user_id", otherId).single(),
-        admin
-          .from("student_profiles")
-          .select("major, year_of_study")
-          .eq("user_id", otherId)
-          .single(),
-        admin
-          .from("student_classes")
-          .select("class_code, class_name")
-          .eq("user_id", otherId)
-          .limit(3),
-      ]);
-
-      return {
-        ...match,
-        otherUser: otherUserRes.data ?? null,
-        profile: profileRes.data ?? null,
-        classes: classesRes.data ?? [],
-        otherId,
-      };
-    })
+  const otherIds = Array.from(
+    new Set(
+      visibleMatches.map((match) =>
+        match.user1_id === uid ? match.user2_id : match.user1_id
+      )
+    )
   );
+
+  // Batch-fetch like /api/groups (avoids per-row .single() failures).
+  const userMap: Record<
+    string,
+    { full_name: string | null; email: string | null; profile_picture_url: string | null }
+  > = {};
+  const profileMap: Record<
+    string,
+    { major: string | null; year_of_study: string | null }
+  > = {};
+  const classesMap: Record<string, { class_code: string; class_name: string }[]> =
+    {};
+
+  if (otherIds.length > 0) {
+    const [usersRes, profilesRes, classesRes] = await Promise.all([
+      admin
+        .from("users")
+        .select("user_id, full_name, email, profile_picture_url")
+        .in("user_id", otherIds),
+      admin
+        .from("student_profiles")
+        .select("user_id, major, year_of_study")
+        .in("user_id", otherIds),
+      admin
+        .from("student_classes")
+        .select("user_id, class_code, class_name")
+        .in("user_id", otherIds),
+    ]);
+
+    (usersRes.data ?? []).forEach((u) => {
+      if (!u.user_id) return;
+      userMap[u.user_id] = {
+        full_name: u.full_name,
+        email: u.email,
+        profile_picture_url: u.profile_picture_url,
+      };
+    });
+    (profilesRes.data ?? []).forEach((p) => {
+      if (!p.user_id) return;
+      profileMap[p.user_id] = {
+        major: p.major,
+        year_of_study: p.year_of_study,
+      };
+    });
+    (classesRes.data ?? []).forEach((c) => {
+      if (!c.user_id) return;
+      const list = classesMap[c.user_id] ?? [];
+      if (list.length < 3) {
+        list.push({ class_code: c.class_code, class_name: c.class_name });
+        classesMap[c.user_id] = list;
+      }
+    });
+  }
+
+  const matchDetails = visibleMatches.map((match) => {
+    const otherId =
+      match.user1_id === uid ? match.user2_id : match.user1_id;
+    return {
+      ...match,
+      otherUser: userMap[otherId] ?? null,
+      profile: profileMap[otherId] ?? null,
+      classes: classesMap[otherId] ?? [],
+      otherId,
+    };
+  });
 
   return NextResponse.json({ matches: matchDetails });
 }

@@ -58,7 +58,7 @@ export default function WaitlistSection() {
             Get Early Access
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Be among the first to experience Cramly. Join our waitlist and get notified when we launch!
+            Be among the first to experience Alexandria. Join our waitlist and get notified when we launch!
           </p>
         </div>
 
@@ -72,7 +72,7 @@ export default function WaitlistSection() {
                 You're on the list!
               </h3>
               <p className="text-muted-foreground">
-                We'll notify you as soon as Cramly is ready. Thanks for your interest!
+                We'll notify you as soon as Alexandria is ready. Thanks for your interest!
               </p>
             </div>
           ) : (
@@ -138,7 +138,7 @@ export default function WaitlistSection() {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          We respect your privacy. Your information will only be used to notify you about Cramly's launch.
+          We respect your privacy. Your information will only be used to notify you about Alexandria's launch.
         </p>
       </div>
     </section>

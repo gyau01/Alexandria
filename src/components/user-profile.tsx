@@ -8,7 +8,7 @@ import { createClient } from '../../supabase/client'
 import { useRouter } from 'next/navigation'
 
 /** Fired from Profile (and similar) when `public.users` display fields change so the header can refetch. */
-export const PROFILE_USER_UPDATED_EVENT = "cramly:profile-user-updated"
+export const PROFILE_USER_UPDATED_EVENT = "alexandria:profile-user-updated"
 
 export default function UserProfile() {
     const [userName, setUserName] = useState<string>("")

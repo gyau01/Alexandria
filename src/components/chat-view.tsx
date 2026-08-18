@@ -82,8 +82,6 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
     return `${msgDate.toLocaleDateString([], { month: "short", day: "numeric" })} ${time}`;
   };
 
-  const pairKey = (a: string, b: string) => [a, b].sort().join("|");
-
   const resolveMatchIds = (match: { id: string; allMatchIds?: string[] }) => {
     if (match.allMatchIds?.length) return match.allMatchIds;
     const hit = matches.find(
@@ -237,100 +235,98 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
     }
   };
 
+  const displayName = (otherUser: any) =>
+    otherUser?.full_name ||
+    otherUser?.email?.split("@")[0] ||
+    "User";
+
   const loadMatches = async () => {
     const supabase = createClient();
 
-    let removedIds = new Set<string>();
+    // Use the admin-backed matches API so other users' names resolve
+    // (client RLS on public.users often returns null → "User").
     try {
-      const removedRes = await fetch("/api/matches/removed", {
-        credentials: "include",
-      });
-      const removedBody = (await removedRes.json().catch(() => ({}))) as {
-        removed?: Array<{ otherId: string }>;
-      };
-      if (removedRes.ok) {
-        removedIds = new Set(
-          (removedBody.removed ?? []).map((entry) => entry.otherId)
-        );
-      }
-    } catch {
-      /* non-blocking */
-    }
-
-    const { data: matchesData } = await supabase
-      .from("matches")
-      .select("*")
-      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
-
-    const rows = (matchesData || []).filter((row) => {
-      const otherId =
-        row.user1_id === userId ? row.user2_id : row.user1_id;
-      return !removedIds.has(otherId);
-    });
-    const byPair = new Map<string, typeof rows>();
-    for (const row of rows) {
-      const key = pairKey(row.user1_id, row.user2_id);
-      const list = byPair.get(key) ?? [];
-      list.push(row);
-      byPair.set(key, list);
-    }
-
-    const mergedRows = Array.from(byPair.values()).map((group) => {
-      const canonical = group.find((g) => g.user1_id === userId) ?? group[0];
-      const restIds = group.filter((g) => g.id !== canonical.id).map((g) => g.id);
-      const allMatchIds = [canonical.id, ...restIds];
-      return { ...canonical, allMatchIds };
-    });
-
-    const matchDetails = await Promise.all(
-      mergedRows.map(async (match) => {
-        const otherId =
-          match.user1_id === userId ? match.user2_id : match.user1_id;
-
-        const { data: otherUser } = await supabase
-          .from("users")
-          .select("full_name, email, profile_picture_url")
-          .eq("user_id", otherId)
-          .single();
-
-        const { count } = await supabase
-          .from("messages")
-          .select("*", { count: "exact", head: true })
-          .in("match_id", match.allMatchIds)
-          .eq("read", false)
-          .neq("sender_id", userId);
-
-        const { data: lastRows } = await supabase
-          .from("messages")
-          .select("created_at")
-          .in("match_id", match.allMatchIds)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        const lastMessageTime = lastRows?.[0]?.created_at ?? match.created_at;
-
-        return {
-          ...match,
-          otherUser,
-          otherId,
-          unreadCount: count || 0,
-          lastMessageTime,
+      let apiMatches: any[] = [];
+      try {
+        const res = await fetch("/api/matches/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        const body = (await res.json().catch(() => ({}))) as {
+          matches?: any[];
+          error?: string;
         };
-      })
-    );
+        if (res.ok) {
+          apiMatches = body.matches ?? [];
+        } else {
+          console.error("Load matches error:", body.error);
+        }
+      } catch (e) {
+        console.error("Load matches error:", e);
+      }
 
-    setMatches(matchDetails);
+      const matchDetails = await Promise.all(
+        apiMatches.map(async (match) => {
+          const matchIds: string[] = match.allMatchIds?.length
+            ? match.allMatchIds
+            : [match.id];
 
-    setUnreadCounts((prev) => {
-      const next = { ...prev };
-      // Clear stale DM keys, then write fresh counts.
-      matchDetails.forEach((match) => {
-        next[match.id] = match.unreadCount;
+          const { count } = await supabase
+            .from("messages")
+            .select("*", { count: "exact", head: true })
+            .in("match_id", matchIds)
+            .eq("read", false)
+            .neq("sender_id", userId);
+
+          const { data: lastRows } = await supabase
+            .from("messages")
+            .select("created_at")
+            .in("match_id", matchIds)
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+          const lastMessageTime = lastRows?.[0]?.created_at ?? match.created_at;
+
+          return {
+            ...match,
+            allMatchIds: matchIds,
+            unreadCount: count || 0,
+            lastMessageTime,
+          };
+        })
+      );
+
+      setMatches(matchDetails);
+
+      // Keep the open DM header in sync once names arrive from the API.
+      setSelectedConv((prev) => {
+        if (!prev || prev.kind !== "dm") return prev;
+        const updated = matchDetails.find(
+          (m) =>
+            m.id === prev.id ||
+            m.otherId === prev.otherId ||
+            m.allMatchIds?.includes(prev.id)
+        );
+        if (!updated) return prev;
+        return {
+          ...prev,
+          ...updated,
+          kind: "dm",
+          name: displayName(updated.otherUser),
+          avatarUrl: updated.otherUser?.profile_picture_url || null,
+        };
       });
-      return next;
-    });
 
-    setLoading(false);
+      setUnreadCounts((prev) => {
+        const next = { ...prev };
+        matchDetails.forEach((match) => {
+          next[match.id] = match.unreadCount;
+        });
+        return next;
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isOwnMessage = (senderId: string) =>
@@ -684,7 +680,7 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
       otherId: m.otherId,
       otherUser: m.otherUser,
       allMatchIds: m.allMatchIds,
-      name: m.otherUser?.full_name || "User",
+      name: displayName(m.otherUser),
       avatarUrl: m.otherUser?.profile_picture_url || null,
       lastMessageTime: m.lastMessageTime,
       unread: unreadCounts[m.id] || 0,
@@ -919,20 +915,31 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
                     title="View profile"
                   >
                     <Avatar className="h-10 w-10">
-                      {selectedConv.otherUser?.profile_picture_url && (
+                      {(selectedConv.avatarUrl ||
+                        selectedConv.otherUser?.profile_picture_url) && (
                         <AvatarImage
-                          src={selectedConv.otherUser.profile_picture_url}
-                          alt={selectedConv.otherUser?.full_name}
+                          src={
+                            selectedConv.avatarUrl ||
+                            selectedConv.otherUser?.profile_picture_url
+                          }
+                          alt={
+                            selectedConv.name ||
+                            selectedConv.otherUser?.full_name
+                          }
                         />
                       )}
                       <AvatarFallback className="bg-blue-600 text-white">
-                        {selectedConv.otherUser?.full_name?.[0]?.toUpperCase() ||
-                          "U"}
+                        {(
+                          selectedConv.name ||
+                          selectedConv.otherUser?.full_name ||
+                          "U"
+                        )[0]?.toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">
-                        {selectedConv.otherUser?.full_name || "User"}
+                        {selectedConv.name ||
+                          displayName(selectedConv.otherUser)}
                       </CardTitle>
                     </div>
                   </button>

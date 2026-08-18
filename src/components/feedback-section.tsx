@@ -70,7 +70,7 @@ export default function FeedbackSection() {
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Found a bug or have an idea? Send a note straight to our technical
-            team and help us make Cramly better.
+            team and help us make Alexandria better.
           </p>
         </div>
 
