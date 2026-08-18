@@ -298,8 +298,8 @@ export default function ChatView({ userId, initialMatch }: ChatViewProps) {
 
       setMatches(matchDetails);
 
-      // Keep the open DM header in sync once names arrive from the API.
-      setSelectedConv((prev) => {
+            // Keep the open DM header in sync once names arrive from the API.
+      setSelectedConv((prev: any) => {
         if (!prev || prev.kind !== "dm") return prev;
         const updated = matchDetails.find(
           (m) =>
