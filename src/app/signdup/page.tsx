@@ -1,10 +1,8 @@
 import { FormMessage, Message } from "@/components/form-message";
-import { finishSign } from "@/components/finishSign";
+import { FinishSign } from "@/components/FinishSign";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { SmtpMessage } from "../smtp-message";
-import { signUpAction } from "@/app/actions";
 import Navbar from "@/components/navbar";
 
 export default async function Signup(props: {
@@ -35,19 +33,10 @@ export default async function Signup(props: {
 						<p className="text-sm text-muted-foreground">
 								If you signed up with your UofL email, you may not see that email.
 								That's okay! Just finish setting up your account and get matching!
-            
-            <finishSign
-              formAction={signUpAction}
-              pendingText="Loading..."
-              className="w-full"
-            >
-              Finish setting up your account!
-            </finishSign>
-
-            <FormMessage message={searchParams} />
+           </p> 
+					 <FinishSign />
           </form>
         </div>
-        <SmtpMessage />
       </div>
     </>
   );
