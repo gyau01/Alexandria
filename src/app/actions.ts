@@ -8,7 +8,7 @@ import { createClient } from "../../supabase/server";
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
-  const fullName = formData.get("full_name")?.toString() || '';
+  const fullName = formData.get("full_name")?.toString() || "";
   const supabase = await createClient();
 
   if (!email || !password) {
@@ -30,7 +30,7 @@ export const signUpAction = async (formData: FormData) => {
         full_name: fullName,
         name: fullName,
         email: email,
-      }
+      },
     },
   });
 
@@ -39,17 +39,22 @@ export const signUpAction = async (formData: FormData) => {
   }
 
   if (data.user) {
-    const { error: usageError } = await supabase.from('user_usage').insert({ user_id: data.user.id });
+    const { error: usageError } = await supabase
+      .from("user_usage")
+      .insert({ user_id: data.user.id });
     if (usageError) {
       console.error("failed to create usage row:", usageError.message);
     }
 
-    await supabase.from('users').update({ subscription: 1 }).eq('id', data.user.id);
+    await supabase
+      .from("users")
+      .update({ subscription: 1 })
+      .eq("id", data.user.id);
   }
 
   return encodedRedirect(
     "success",
-    "/sign-up",
+    "/signdup",
     "Thanks for signing up! Please check your email for a verification link.",
   );
 };
@@ -167,7 +172,11 @@ export const resetPasswordAction = async (formData: FormData) => {
     );
   }
 
-  return encodedRedirect("success", "/protected/reset-password", "Password updated");
+  return encodedRedirect(
+    "success",
+    "/protected/reset-password",
+    "Password updated",
+  );
 };
 
 export const signOutAction = async () => {
@@ -180,10 +189,10 @@ export const checkUserSubscription = async (userId: string) => {
   const supabase = await createClient();
 
   const { data: subscription, error } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active')
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("status", "active")
     .single();
 
   if (error) {
